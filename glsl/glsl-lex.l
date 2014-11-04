@@ -43,6 +43,14 @@
 
 #include <cassert>
 #define YY_DECL int GLSLParser::nextToken()
+
+#if defined(_MSC_VER)
+#define strtoll _strtoi64
+#define strtoull _strtoui64
+#if _MSC_VER < 1800
+#define strtof strtod
+#endif
+#endif
 %}
 
 %option noyywrap nounistd always-interactive

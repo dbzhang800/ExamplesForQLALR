@@ -1,5 +1,5 @@
 
-%option noyywrap
+%option noyywrap nounistd always-interactive
 
 %{
 /****************************************************************************

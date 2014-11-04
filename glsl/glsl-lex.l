@@ -45,7 +45,7 @@
 #define YY_DECL int GLSLParser::nextToken()
 %}
 
-%option noyywrap
+%option noyywrap nounistd always-interactive
 
 hex [0-9a-fA-F]
 dec [1-9][0-9]*

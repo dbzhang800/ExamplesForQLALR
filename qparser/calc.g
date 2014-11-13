@@ -120,14 +120,4 @@ case $rule_number:
 /.
     } // switch
 }
-
-#include <cstdio>
-
-int main()
-{
-  CalcParser p;
-
-  if (p.parse())
-    printf("ok\n");
-}
 ./

@@ -9,6 +9,7 @@ Widget::Widget(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->calculateButton, SIGNAL(clicked()), SLOT(onCalculateButtonClicked()));
+    connect(ui->inputEdit, SIGNAL(textChanged(QString)), SLOT(onInputTextChanged()));
 }
 
 Widget::~Widget()
@@ -29,4 +30,9 @@ void Widget::onCalculateButtonClicked()
         ui->resultEdit->appendPlainText(QString("Failed to parse: %1")
                                         .arg(ui->inputEdit->text()));
     }
+}
+
+void Widget::onInputTextChanged()
+{
+    ui->calculateButton->setEnabled(!ui->inputEdit->text().isEmpty());
 }

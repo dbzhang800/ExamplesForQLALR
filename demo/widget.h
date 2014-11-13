@@ -17,6 +17,7 @@ public:
 
 private slots:
     void onCalculateButtonClicked();
+    void onInputTextChanged();
 
 private:
     Ui::Widget *ui;

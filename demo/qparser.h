@@ -34,8 +34,13 @@
 #ifndef QPARSER_H
 #define QPARSER_H
 
-#include <QtCore/QSharedDataPointer>
-#include <QtCore/QVarLengthArray>
+#include <QSharedDataPointer>
+#include <QVarLengthArray>
+#include <QByteArray>
+
+struct yy_buffer_state;
+yy_buffer_state * calc_scan_bytes(const char *bytes,int len);
+void calc_delete_buffer(yy_buffer_state *buffer);
 
 template <typename _Parser, typename _Table, typename _Value = int>
 class QParser: protected _Table
@@ -44,7 +49,7 @@ public:
     QParser();
     ~QParser();
 
-    bool parse();
+    bool parse(const QByteArray &bytes);
 
     inline _Value &sym(int index);
 
@@ -98,9 +103,10 @@ QParser<_Parser, _Table, _Value>::~QParser()
 }
 
 template <typename _Parser, typename _Table, typename _Value>
-bool QParser<_Parser, _Table, _Value>::parse()
+bool QParser<_Parser, _Table, _Value>::parse(const QByteArray &bytes)
 {
     const int INITIAL_STATE = 0;
+    yy_buffer_state * buffer = calc_scan_bytes(bytes.data(), bytes.size());
 
     d->tos = 0;
     d->reallocateStack();
@@ -114,8 +120,10 @@ bool QParser<_Parser, _Table, _Value>::parse()
 
         act = _Table::t_action(act, token);
 
-        if (d->stateStack[d->tos] == _Table::ACCEPT_STATE)
+        if (d->stateStack[d->tos] == _Table::ACCEPT_STATE) {
+            calc_delete_buffer(buffer);
             return true;
+        }
 
         else if (act > 0) {
             if (++d->tos == d->stackSize)
@@ -137,6 +145,7 @@ bool QParser<_Parser, _Table, _Value>::parse()
         else break;
     }
 
+    calc_delete_buffer(buffer);
     return false;
 }
 

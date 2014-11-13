@@ -1,5 +1,5 @@
 
-%option noyywrap nounistd always-interactive
+%option noyywrap nounistd never-interactive
 
 %{
 /****************************************************************************

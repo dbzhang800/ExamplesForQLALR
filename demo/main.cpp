@@ -38,7 +38,7 @@ int main()
 {
   CalcParser p;
 
-  if (p.parse())
+  if (p.parse(QByteArray("1+3")))
     printf("ok\n");
 }
 

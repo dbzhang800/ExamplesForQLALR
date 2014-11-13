@@ -31,14 +31,15 @@
 **
 ****************************************************************************/
 
-#include <stdio.h>
-#include "calc_parser.h"
+#include "widget.h"
+#include <QApplication>
 
-int main()
+int main(int argc, char **argv)
 {
-  CalcParser p;
+    QApplication app(argc, argv);
 
-  if (p.parse(QByteArray("1+3")))
-    printf("ok\n");
+    Widget w;
+    w.show();
+    return app.exec();
 }
 

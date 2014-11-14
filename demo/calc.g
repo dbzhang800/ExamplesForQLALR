@@ -102,15 +102,24 @@ case $rule_number:
   break;
 ./
 
-MultiplicativeExpression : PrimaryExpression;
-MultiplicativeExpression : MultiplicativeExpression T_STAR PrimaryExpression;
+UnaryExpression: PrimaryExpression;
+UnaryExpression: T_PLUS PrimaryExpression;
+UnaryExpression: T_MINUS PrimaryExpression;
+/.
+case $rule_number:
+  sym(1) = -sym(1);
+  break;
+./
+
+MultiplicativeExpression : UnaryExpression;
+MultiplicativeExpression : MultiplicativeExpression T_STAR UnaryExpression;
 /.
 case $rule_number:
   sym(1) *= sym (3);
   break;
 ./
 
-MultiplicativeExpression : MultiplicativeExpression T_DIVIDE PrimaryExpression;
+MultiplicativeExpression : MultiplicativeExpression T_DIVIDE UnaryExpression;
 /.
 case $rule_number:
   sym(1) /= sym (3);

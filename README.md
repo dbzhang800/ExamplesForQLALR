@@ -7,6 +7,8 @@ QLALR is a LALR(1) parser generator.
 * Qt5 MinGW 4.8.2
 * Qt4 linux-gcc
 
+![ScreenShot](/demo/demo.png?raw=true "ScreenShot for demo")
+
 ## References
 
 * http://blog.qt.digia.com/blog/2007/03/09/lalr1-and-trolltechs-creative-fridays/

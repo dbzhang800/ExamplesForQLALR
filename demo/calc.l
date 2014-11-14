@@ -45,9 +45,13 @@
 
 #include "calc_parser.h"
 #include <cstdlib>
-
+#ifdef _MSC_VER
+  #pragma warning(disable: 4003)
+  #pragma warning(disable: 4018)
+#endif
 #define YY_DECL int CalcParser::nextToken()
 %}
+
 D			[0-9]
 L			[a-zA-Z_]
 H			[a-fA-F0-9]

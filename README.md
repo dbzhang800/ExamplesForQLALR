@@ -1,5 +1,11 @@
 QLALR is a LALR(1) parser generator.
 
+## Test Platform
+
+* Qt5 MSVC 2010
+* Qt4 MSVC 2010
+* Qt5 MinGW 4.8.2
+* Qt4 linux-gcc
 
 ## References
 

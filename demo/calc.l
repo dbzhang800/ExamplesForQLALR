@@ -48,14 +48,25 @@
 
 #define YY_DECL int CalcParser::nextToken()
 %}
-
+D			[0-9]
+L			[a-zA-Z_]
+H			[a-fA-F0-9]
+E			[Ee][+-]?{D}+
 %%
 
 [ \t\n]     { /* eat me */ }
-[0-9]+      { sym(1) = atoi (yytext); return Token_number; }
-"("         { return Token_lparen; }
-")"         { return Token_rparen; }
-"+"         { return Token_plus; }
-"-"         { return Token_minus; }
+
+{L}({L}|{D})*       { return T_IDENTIFIER; }
+{D}+{E}?            { sym(1) = atof(yytext); return T_NUMRIC_LITERAL; }
+{D}*"."{D}+({E})?   { sym(1) = atof(yytext); return T_NUMRIC_LITERAL; }
+{D}+"."{D}*({E})?   { sym(1) = atof(yytext); return T_NUMRIC_LITERAL; }
+\"(\\.|[^\\"])*\"   { return T_STRING_LITERAL; }
+
+"("         { return T_LPAREN; }
+")"         { return T_RPAREN; }
+"+"         { return T_PLUS; }
+"-"         { return T_MINUS; }
+"/"         { return T_DIVIDE; }
+"*"         { return T_STAR; }
 
 %%

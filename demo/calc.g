@@ -43,12 +43,15 @@
 %decl calc_parser.h
 %impl calc_parser.cpp
 
-%token_prefix Token_
-%token number
-%token lparen
-%token rparen
-%token plus
-%token minus
+%token T_NUMRIC_LITERAL "numric literal"
+%token T_STRING_LITERAL "string literal"
+%token T_IDENTIFIER "identifier"
+%token T_LPAREN "("
+%token T_RPAREN ")"
+%token T_PLUS "+"
+%token T_MINUS "-"
+%token T_DIVIDE "/"
+%token T_STAR "*"
 
 %start Goal
 
@@ -59,7 +62,7 @@
 #include "qparser.h"
 #include "calc_grammar_p.h"
 
-class CalcParser: public QParser<CalcParser, $table>
+class CalcParser: public QParser<CalcParser, $table, double>
 {
 public:
   int nextToken();
@@ -91,31 +94,45 @@ case $rule_number:
   break;
 ./
 
-PrimaryExpression: number ;
-PrimaryExpression: lparen Expression rparen ;
+PrimaryExpression: T_NUMRIC_LITERAL ;
+PrimaryExpression: T_LPAREN Expression T_RPAREN ;
 /.
 case $rule_number:
   sym(1) = sym (2);
   break;
 ./
 
-Expression: PrimaryExpression ;
+MultiplicativeExpression : PrimaryExpression;
+MultiplicativeExpression : MultiplicativeExpression T_STAR PrimaryExpression;
+/.
+case $rule_number:
+  sym(1) *= sym (3);
+  break;
+./
 
-Expression: Expression plus PrimaryExpression;
+MultiplicativeExpression : MultiplicativeExpression T_DIVIDE PrimaryExpression;
+/.
+case $rule_number:
+  sym(1) /= sym (3);
+  break;
+./
+
+AdditiveExpression: MultiplicativeExpression;
+AdditiveExpression: AdditiveExpression T_PLUS MultiplicativeExpression;
 /.
 case $rule_number:
   sym(1) += sym (3);
   break;
 ./
 
-Expression: Expression minus PrimaryExpression;
+AdditiveExpression: AdditiveExpression T_MINUS MultiplicativeExpression;
 /.
 case $rule_number:
   sym(1) -= sym (3);
   break;
 ./
 
-
+Expression: AdditiveExpression ;
 
 /.
     } // switch

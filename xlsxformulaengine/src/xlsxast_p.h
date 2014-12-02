@@ -56,7 +56,8 @@ public:
         Kind_NumericLiteral,
         Kind_StringLiteral,
         Kind_UnaryMinusExpression,
-        Kind_UnaryPlusExpression
+        Kind_UnaryPlusExpression,
+        Kind_UnaryPercentExpression
     };
 
     inline Node()
@@ -116,6 +117,16 @@ class UnaryMinusExpression: public Node
 public:
     UnaryMinusExpression(Node *e):
         expression (e) { kind = Kind_UnaryMinusExpression; }
+
+// attributes
+    Node *expression;
+};
+
+class UnaryPercentExpression: public Node
+{
+public:
+    UnaryPercentExpression(Node *e):
+        expression (e) { kind = Kind_UnaryPercentExpression; }
 
 // attributes
     Node *expression;

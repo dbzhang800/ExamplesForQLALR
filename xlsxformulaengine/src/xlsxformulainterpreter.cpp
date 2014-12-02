@@ -56,6 +56,14 @@ XlsxCellData XlsxFormulaInterpreter::interpret(XlsxAST::Node *node)
         else
             return XlsxCellData("#VALUE!", XlsxCellData::T_Error);
     }
+    case XlsxAST::Node::Kind_UnaryPercentExpression:
+    {
+        XlsxCellData data = interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression);
+        if (data.isNumeric())
+            return XlsxCellData(data.doubleValue()/100.0);
+        else
+            return XlsxCellData("#VALUE!", XlsxCellData::T_Error);
+    }
     case XlsxAST::Node::Kind_BinaryExpression:
     {
         XlsxAST::BinaryExpression *binNode = static_cast<XlsxAST::BinaryExpression *>(node);

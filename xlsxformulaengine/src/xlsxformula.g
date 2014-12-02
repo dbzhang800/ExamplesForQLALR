@@ -214,18 +214,25 @@ case $rule_number:
 ./
 
 UnaryExpression: PrimaryExpression;
-UnaryExpression: T_PLUS PrimaryExpression;
+UnaryExpression: T_PLUS UnaryExpression;
 /.
 case $rule_number:
   sym(1).Node = makeAstNode<XlsxAST::UnaryPlusExpression> (driver->pool, sym(2).Node);
   break;
 ./
 
-UnaryExpression: T_MINUS PrimaryExpression;
+UnaryExpression: T_MINUS UnaryExpression;
 /.
 case $rule_number:
   sym(1).Node = makeAstNode<XlsxAST::UnaryMinusExpression> (driver->pool, sym(2).Node);
   break;
+./
+
+UnaryExpression: UnaryExpression T_PERCENT;
+/.
+  case $rule_number:
+    sym(1).Node = makeAstNode<XlsxAST::UnaryPercentExpression> (driver->pool, sym(2).Node);
+    break;
 ./
 
 ExponentialExpression : UnaryExpression;

@@ -228,15 +228,23 @@ case $rule_number:
   break;
 ./
 
-MultiplicativeExpression : UnaryExpression;
-MultiplicativeExpression : MultiplicativeExpression T_STAR UnaryExpression;
+ExponentialExpression : UnaryExpression;
+ExponentialExpression : ExponentialExpression T_XOR UnaryExpression;
+/.
+  case $rule_number:
+  sym(1).Node = makeAstNode<XlsxAST::BinaryExpression> (driver->pool, sym(1).Node, XlsxAST::Exp, sym(3).Node);
+  break;
+./
+
+MultiplicativeExpression : ExponentialExpression;
+MultiplicativeExpression : MultiplicativeExpression T_STAR ExponentialExpression;
 /.
 case $rule_number:
   sym(1).Node = makeAstNode<XlsxAST::BinaryExpression> (driver->pool, sym(1).Node, XlsxAST::Mul, sym(3).Node);
   break;
 ./
 
-MultiplicativeExpression : MultiplicativeExpression T_DIVIDE UnaryExpression;
+MultiplicativeExpression : MultiplicativeExpression T_DIVIDE ExponentialExpression;
 /.
 case $rule_number:
   sym(1).Node = makeAstNode<XlsxAST::BinaryExpression> (driver->pool, sym(1).Node, XlsxAST::Div, sym(3).Node);

@@ -35,6 +35,7 @@ enum Op {
     Add,
     Div,
     Equal,
+    Exp, //^
     Ge,
     Gt,
     Le,

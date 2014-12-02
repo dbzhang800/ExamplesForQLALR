@@ -42,6 +42,9 @@ void FormulaEngineTest::testArithmaticOperator_data()
     QTest::newRow("-") << "1-3--1" << -1.0;
     QTest::newRow("*") << "1+2*3" << 7.0;
     QTest::newRow("/") << "10+2/4" << 10.5;
+    QTest::newRow("^") << "-3^2" << 9.0;
+    QTest::newRow("^ second") << "0-3^2" << -9.0;
+    QTest::newRow("^ third") << "-3^2*2^3" << 72.0;
     QTest::newRow("()") << "(1+3)*4+2*(3/2)-2" << 17.;
 }
 

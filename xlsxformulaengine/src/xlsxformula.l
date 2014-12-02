@@ -19,6 +19,7 @@
 
 #include "xlsxformulaparser_p.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <QString>
 #ifdef _MSC_VER
   #pragma warning(disable: 4003)

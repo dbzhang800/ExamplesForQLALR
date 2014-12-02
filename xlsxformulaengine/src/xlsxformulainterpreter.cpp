@@ -15,6 +15,9 @@
 #include "xlsxformulainterpreter_p.h"
 #include "xlsxast_p.h"
 
+#include <QDebug>
+#include <math.h>
+
 XlsxFormulaInterpreter::XlsxFormulaInterpreter(XlsxFormulaEnginePrivate *engine)
     :m_engine(engine)
 {
@@ -75,6 +78,8 @@ XlsxCellData XlsxFormulaInterpreter::interpret(XlsxAST::Node *node)
             return XlsxCellData(left.doubleValue() * right.doubleValue());
         case XlsxAST::Div:
             return XlsxCellData(left.doubleValue() / right.doubleValue());
+        case XlsxAST::Exp:
+            return XlsxCellData(pow(left.doubleValue(), right.doubleValue()));
         default:
             break;
         }

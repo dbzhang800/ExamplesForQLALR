@@ -13,22 +13,51 @@
 **
 ****************************************************************************/
 
-#include "xlsxformulaengine.h"
+#include "xlsxformulaengine_p.h"
 #include "xlsxformulaparser_p.h"
+#include "xlsxformulainterpreter_p.h"
+#include "xlsxast_p.h"
+#include "xlsxworksheet.h"
 
 #include <QVariant>
 
-XlsxFormulaEngine::XlsxFormulaEngine(QObject *parent) :
-    QObject(parent)
+XlsxFormulaEnginePrivate::XlsxFormulaEnginePrivate(XlsxFormulaEngine *q)
+    :q_ptr(q), pool(0)
 {
+
+}
+
+/*!
+ * \class XlsxFormulaEngine
+ */
+
+XlsxFormulaEngine::XlsxFormulaEngine(QObject *parent) :
+    QObject(parent), d_ptr(new XlsxFormulaEnginePrivate(this))
+{
+}
+
+XlsxFormulaEngine::~XlsxFormulaEngine()
+{
+    delete d_ptr;
 }
 
 QVariant XlsxFormulaEngine::evaluate(const QString &formula)
 {
-    XlsxFormulaParser p;
-    p.parse(formula.toUtf8());
+    Q_D(XlsxFormulaEngine);
+    d->formulaString = formula;
+    d->pool = new XlsxMemoryPool;
 
-    return p.sym(1).dval;
+    XlsxFormulaParser parser;
+    parser.parse(d);
+
+    XlsxAST::Node *ast = parser.sym(1).Node;
+    XlsxFormulaInterpreter interpreter(d);
+    XlsxCellData data = interpreter.interpret(ast);
+
+    delete d->pool;
+    d->pool = 0;
+
+    return data.cellValue();
 }
 
 QString XlsxFormulaEngine::errorMessage() const

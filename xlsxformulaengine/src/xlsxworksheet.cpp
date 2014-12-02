@@ -13,29 +13,25 @@
 **
 ****************************************************************************/
 
-#ifndef XLSXFORMULAENGINE_H
-#define XLSXFORMULAENGINE_H
+#include "xlsxworksheet.h"
 
-#include <QObject>
-class XlsxFormulaEnginePrivate;
-
-class XlsxFormulaEngine : public QObject
+XlsxWorksheet::XlsxWorksheet()
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(XlsxFormulaEngine)
+}
 
-public:
-    explicit XlsxFormulaEngine(QObject *parent = 0);
-    ~XlsxFormulaEngine();
+void XlsxWorksheet::addCell(const QString &cellRef, const XlsxCellData &data)
+{
+    cellTable[cellRef] = data;
+}
 
-    QVariant evaluate(const QString &formula);
-    QString errorMessage() const;
-signals:
+XlsxCellData XlsxWorksheet::cellAt(const QString &cellRef)
+{
+    if (cellTable.contains(cellRef))
+        return cellTable[cellRef];
+    return XlsxCellData(QString(), XlsxCellData::T_String);
+}
 
-public slots:
-
-private:
-    XlsxFormulaEnginePrivate * d_ptr;
-};
-
-#endif // XLSXFORMULAENGINE_H
+void XlsxWorksheet::defineName(const QString &name, const QString &formula)
+{
+    definedNames[name] = formula;
+}

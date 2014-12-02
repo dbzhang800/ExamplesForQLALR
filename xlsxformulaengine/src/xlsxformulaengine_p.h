@@ -12,30 +12,22 @@
 ** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ****************************************************************************/
+#ifndef XLSXFORMULAENGINE_P_H
+#define XLSXFORMULAENGINE_P_H
 
-#ifndef XLSXFORMULAENGINE_H
-#define XLSXFORMULAENGINE_H
+#include "xlsxformulaengine.h"
+#include "xlsxmemorypool_p.h"
 
-#include <QObject>
-class XlsxFormulaEnginePrivate;
-
-class XlsxFormulaEngine : public QObject
+class XlsxFormulaEnginePrivate
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(XlsxFormulaEngine)
-
+    Q_DECLARE_PUBLIC(XlsxFormulaEngine)
 public:
-    explicit XlsxFormulaEngine(QObject *parent = 0);
-    ~XlsxFormulaEngine();
+    XlsxFormulaEnginePrivate(XlsxFormulaEngine *q);
 
-    QVariant evaluate(const QString &formula);
-    QString errorMessage() const;
-signals:
+    QString formulaString;
+    XlsxMemoryPool *pool;
 
-public slots:
-
-private:
-    XlsxFormulaEnginePrivate * d_ptr;
+    XlsxFormulaEngine * q_ptr;
 };
 
-#endif // XLSXFORMULAENGINE_H
+#endif // XLSXFORMULAENGINE_P_H

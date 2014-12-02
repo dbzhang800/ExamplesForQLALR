@@ -12,30 +12,22 @@
 ** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ****************************************************************************/
+#ifndef XLSXFORMULAINTERPRETER_P_H
+#define XLSXFORMULAINTERPRETER_P_H
 
-#ifndef XLSXFORMULAENGINE_H
-#define XLSXFORMULAENGINE_H
+#include "xlsxast_p.h"
+#include "xlsxworksheet.h"
 
-#include <QObject>
 class XlsxFormulaEnginePrivate;
 
-class XlsxFormulaEngine : public QObject
+class XlsxFormulaInterpreter
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(XlsxFormulaEngine)
-
 public:
-    explicit XlsxFormulaEngine(QObject *parent = 0);
-    ~XlsxFormulaEngine();
-
-    QVariant evaluate(const QString &formula);
-    QString errorMessage() const;
-signals:
-
-public slots:
+    XlsxFormulaInterpreter(XlsxFormulaEnginePrivate *engine);
+    XlsxCellData interpret(XlsxAST::Node *node);
 
 private:
-    XlsxFormulaEnginePrivate * d_ptr;
+    XlsxFormulaEnginePrivate *m_engine;
 };
 
-#endif // XLSXFORMULAENGINE_H
+#endif // XLSXFORMULAINTERPRETER_P_H

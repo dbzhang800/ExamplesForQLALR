@@ -19,6 +19,7 @@
 
 #include "xlsxformulaparser_p.h"
 #include <stdlib.h>
+#include <QString>
 #ifdef _MSC_VER
   #pragma warning(disable: 4003)
   #pragma warning(disable: 4018)
@@ -30,21 +31,70 @@ D			[0-9]
 L			[a-zA-Z_]
 H			[a-fA-F0-9]
 E			[Ee][+-]?{D}+
+
+%s str
+
 %%
 
-[ \t\n]     { /* eat me */ }
+%{
+char string_buf[1024];
+char *string_buf_ptr;
+%}
 
-{L}({L}|{D})*       { sym(1).dval = atof(yytext); return T_IDENTIFIER; }
+\"             { /* start double-quote */
+                   string_buf_ptr = string_buf; BEGIN(str);
+               }
+
+<str>\"        { /* closing double-quote */
+                   BEGIN(INITIAL);
+                   *string_buf_ptr = '\0';
+                   sym(1).sval = new QString(QString::fromUtf8(string_buf));
+                   return T_STRING_LITERAL;
+               }
+<str>\"\"      { /* 2double-quote means escaped double-quote */
+                   *string_buf_ptr++ = '\"';
+               }
+<str>[^\"]+    {
+                   char *yptr = yytext;
+                   while (*yptr)
+                       *string_buf_ptr++ = *yptr++;
+               }
+
+
+\$?([a-zA-Z]{1,3})\$?([1-9][0-9]{0,5}|10[0-9]{5})
+
+[a-zA-Z_]([a-zA-Z0-9_])*  {
+                              sym(1).sval = new QString(QString::fromUtf8(yytext));
+                              return T_IDENTIFIER;
+                          }
+
 {D}+{E}?            { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }
 {D}*"."{D}+({E})?   { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }
 {D}+"."{D}*({E})?   { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }
-\"(\\.|[^\\"])*\"   { return T_STRING_LITERAL; }
 
 "("         { return T_LPAREN; }
 ")"         { return T_RPAREN; }
+"["         { return T_LBRACKET; }
+"]"         { return T_RBRACKET; }
+"{"         { return T_LBRACE; }
+"}"         { return T_RBRACE; }
+":"         { return T_COLON; }
 "+"         { return T_PLUS; }
 "-"         { return T_MINUS; }
 "/"         { return T_DIVIDE; }
 "*"         { return T_STAR; }
+"^"         { return T_XOR; }
+","         { return T_COMMA; }
+"%"         { return T_PERCENT; }
+"&"         { return T_AND; }
+"="         { return T_EQ; }
+"<"         { return T_LT; }
+">"         { return T_GT; }
+"<>"        { return T_NOT_EQ; }
+"<="        { return T_LE; }
+">="        { return T_GE; }
+
+
+[ \t\v\f\n]                   { /* eat me */ }
 
 %%

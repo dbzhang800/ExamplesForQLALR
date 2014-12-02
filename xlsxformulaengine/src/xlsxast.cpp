@@ -13,29 +13,11 @@
 **
 ****************************************************************************/
 
-#ifndef XLSXFORMULAENGINE_H
-#define XLSXFORMULAENGINE_H
+#include "xlsxast_p.h"
 
-#include <QObject>
-class XlsxFormulaEnginePrivate;
+namespace XlsxAST {
 
-class XlsxFormulaEngine : public QObject
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(XlsxFormulaEngine)
+//
 
-public:
-    explicit XlsxFormulaEngine(QObject *parent = 0);
-    ~XlsxFormulaEngine();
+} // namespace XlsxAST
 
-    QVariant evaluate(const QString &formula);
-    QString errorMessage() const;
-signals:
-
-public slots:
-
-private:
-    XlsxFormulaEnginePrivate * d_ptr;
-};
-
-#endif // XLSXFORMULAENGINE_H

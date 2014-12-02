@@ -17,6 +17,7 @@
 #define XLSXFORMULAENGINE_H
 
 #include <QObject>
+class XlsxCellData;
 class XlsxFormulaEnginePrivate;
 
 class XlsxFormulaEngine : public QObject
@@ -28,11 +29,7 @@ public:
     explicit XlsxFormulaEngine(QObject *parent = 0);
     ~XlsxFormulaEngine();
 
-    QVariant evaluate(const QString &formula);
-    QString errorMessage() const;
-signals:
-
-public slots:
+    XlsxCellData evaluate(const QString &formula);
 
 private:
     XlsxFormulaEnginePrivate * d_ptr;

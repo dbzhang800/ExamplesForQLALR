@@ -19,8 +19,6 @@
 #include "xlsxast_p.h"
 #include "xlsxworksheet.h"
 
-#include <QVariant>
-
 XlsxFormulaEnginePrivate::XlsxFormulaEnginePrivate(XlsxFormulaEngine *q)
     :q_ptr(q), pool(0)
 {
@@ -41,7 +39,7 @@ XlsxFormulaEngine::~XlsxFormulaEngine()
     delete d_ptr;
 }
 
-QVariant XlsxFormulaEngine::evaluate(const QString &formula)
+XlsxCellData XlsxFormulaEngine::evaluate(const QString &formula)
 {
     Q_D(XlsxFormulaEngine);
     d->formulaString = formula;
@@ -57,10 +55,5 @@ QVariant XlsxFormulaEngine::evaluate(const QString &formula)
     delete d->pool;
     d->pool = 0;
 
-    return data.cellValue();
-}
-
-QString XlsxFormulaEngine::errorMessage() const
-{
-    return QString();
+    return data;
 }

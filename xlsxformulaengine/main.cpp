@@ -13,17 +13,47 @@
 **
 ****************************************************************************/
 
-#include <QCoreApplication>
-#include <QDebug>
 #include "xlsxformulaengine.h"
+#include "xlsxworksheet.h"
+#include <QtTest>
 
-int main(int argc, char **argv)
+class FormulaEngineTest : public QObject
 {
-    QCoreApplication app(argc, argv);
+    Q_OBJECT
 
-    XlsxFormulaEngine engine;
-    qDebug()<<engine.evaluate("1+2+3*4--2");
+public:
+    FormulaEngineTest();
 
-    return 0;
+private Q_SLOTS:
+    void testArithmaticOperator_data();
+    void testArithmaticOperator();
+};
+
+FormulaEngineTest::FormulaEngineTest()
+{
 }
 
+void FormulaEngineTest::testArithmaticOperator_data()
+{
+    QTest::addColumn<QString>("formula");
+    QTest::addColumn<double>("result");
+
+    QTest::newRow("+") << "1+2+3++2" << 8.0;
+    QTest::newRow("-") << "1-3--1" << -1.0;
+    QTest::newRow("*") << "1+2*3" << 7.0;
+    QTest::newRow("/") << "10+2/4" << 10.5;
+    QTest::newRow("()") << "(1+3)*4+2*(3/2)-2" << 17.;
+}
+
+void FormulaEngineTest::testArithmaticOperator()
+{
+    QFETCH(QString, formula);
+    QFETCH(double, result);
+
+    XlsxFormulaEngine engine;
+    QCOMPARE(engine.evaluate(formula).doubleValue(), result);
+}
+
+QTEST_APPLESS_MAIN(FormulaEngineTest)
+
+#include "main.moc"

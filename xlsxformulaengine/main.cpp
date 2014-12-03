@@ -46,7 +46,7 @@ void FormulaEngineTest::testOperator_data()
     QTest::newRow("exp1")  << "-3^2"        << XlsxCellData(9);
     QTest::newRow("exp2")  << "0-3^2"       << XlsxCellData(-9);
     QTest::newRow("exp3")  << "-3^2*2^3"    << XlsxCellData(72);
-    QTest::newRow("space") << " 1 + 2   " << XlsxCellData(3.0);
+    QTest::newRow("space") << " 1 + 2   "   << XlsxCellData(3.0);
 
     QTest::newRow("%")     << "+++++20000%%+++++1" << XlsxCellData(3);
     QTest::newRow("()")    << "(1+3)*4+2*(3/2)-2"  << XlsxCellData(17);
@@ -59,7 +59,14 @@ void FormulaEngineTest::testOperator_data()
     //Text concatenation
     QTest::newRow("textConcat1") << "11&22"                << XlsxCellData("1122");
     QTest::newRow("textConcat2") << "\"Hello \"&123&-300%" << XlsxCellData("Hello 123-3");
+    QTest::newRow("textConcat3") << "\"Hello \"&(1<3)"     << XlsxCellData("Hello TRUE");
 
+    //Comparison
+    QTest::newRow("numCmp1") << "4+1>2"          << XlsxCellData(true, XlsxCellData::T_Boolean);
+    QTest::newRow("strCmp1") << "\"111\"<\"2\""  << XlsxCellData(true, XlsxCellData::T_Boolean);
+    QTest::newRow("mixCmp1") << "\"111\">222"    << XlsxCellData(true, XlsxCellData::T_Boolean);
+    QTest::newRow("mixCmp2") << "\"111\">(10<2)" << XlsxCellData(false, XlsxCellData::T_Boolean);
+    QTest::newRow("mixCmp3") << "100>(10<2)" << XlsxCellData(false, XlsxCellData::T_Boolean);
 }
 
 void FormulaEngineTest::testOperator()

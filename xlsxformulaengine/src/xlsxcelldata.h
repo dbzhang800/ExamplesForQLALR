@@ -24,8 +24,8 @@ class XlsxCellData
 {
 public:
     enum Type {
+        T_Numeric, //numeric < string < boolean ??
         T_String,
-        T_Numeric,
         T_Boolean,
         T_Error
     };
@@ -49,6 +49,7 @@ public:
 
     bool operator == (const XlsxCellData &other) const;
     bool operator != (const XlsxCellData &other) const;
+    bool operator < (const XlsxCellData &other) const;
 
 private:
     Type type;

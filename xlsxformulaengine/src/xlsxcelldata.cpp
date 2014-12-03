@@ -61,7 +61,7 @@ bool XlsxCellData::booleanValue() const
 QString XlsxCellData::stringValue() const
 {
     if (type == T_Boolean)
-        return "TRUE" ? val.toBool() : "FALSE";
+        return val.toBool() ? QString("TRUE") : QString("FALSE");
 
     return val.toString();
 }
@@ -70,7 +70,19 @@ bool XlsxCellData::operator == (const XlsxCellData &other) const
 {
     return type == other.type && val == other.val;
 }
+
 bool XlsxCellData::operator != (const XlsxCellData &other) const
 {
     return type != other.type || val != other.val;
+}
+
+bool XlsxCellData::operator < (const XlsxCellData &other) const
+{
+    if (type == other.type) {
+        if (type == T_String)
+            return val.toString() < other.val.toString();
+        return val.toDouble() < other.val.toDouble();
+    }
+
+    return type < other.type;
 }

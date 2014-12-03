@@ -99,6 +99,33 @@ XlsxCellData XlsxFormulaInterpreter::interpret(XlsxAST::Node *node)
 
         return XlsxCellData(QString("%1%2").arg(left.stringValue()).arg(right.stringValue()));
     }
+    case XlsxAST::Node::Kind_BinaryComparisonExpression: {
+        XlsxAST::BinaryExpressionNode *binNode = static_cast<XlsxAST::BinaryExpressionNode *>(node);
+        XlsxCellData left = interpret(binNode->left);
+        if (left.isError())
+            return left;
+        XlsxCellData right = interpret(binNode->right);
+        if (right.isError())
+            return right;
+        switch (binNode->op) {
+        case XlsxAST::Lt:
+            return XlsxCellData(left < right, XlsxCellData::T_Boolean);
+        case XlsxAST::Le:
+            return XlsxCellData((left < right || left == right), XlsxCellData::T_Boolean);
+        case XlsxAST::Gt:
+            return XlsxCellData(right < left, XlsxCellData::T_Boolean);
+        case XlsxAST::Ge:
+            return XlsxCellData((right < left || left == right), XlsxCellData::T_Boolean);
+        case XlsxAST::Equal:
+            return XlsxCellData(left == right, XlsxCellData::T_Boolean);
+        case XlsxAST::NotEqual:
+            return XlsxCellData(left != right, XlsxCellData::T_Boolean);
+        default:
+            break;
+        }
+
+        return XlsxCellData(QString("%1%2").arg(left.stringValue()).arg(right.stringValue()));
+    }
     default:
         break;
     }

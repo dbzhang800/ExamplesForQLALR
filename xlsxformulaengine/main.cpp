@@ -54,6 +54,7 @@ void FormulaEngineTest::testOperator_data()
     //Convert string to number if convertable.
     QTest::newRow("str2Num")     << "\"1\"+\"33\"*2" << XlsxCellData(67);
     QTest::newRow("str2Num_2")   << "\"1ff\"+2"      << XlsxCellData("#VALUE!", XlsxCellData::T_Error);
+    QTest::newRow("str2Num_3")   << "-\"1000\"%"     << XlsxCellData(-10);
 }
 
 void FormulaEngineTest::testOperator()

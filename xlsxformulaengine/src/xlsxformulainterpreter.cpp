@@ -49,14 +49,14 @@ XlsxCellData XlsxFormulaInterpreter::interpret(XlsxAST::Node *node)
     }
     case XlsxAST::Node::Kind_UnaryMinusExpression: {
         XlsxCellData data = interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression);
-        if (data.isNumeric())
+        if (data.canConvertToNumeric())
             return XlsxCellData(-data.doubleValue());
         else
             return XlsxCellData("#VALUE!", XlsxCellData::T_Error);
     }
     case XlsxAST::Node::Kind_UnaryPercentExpression: {
         XlsxCellData data = interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression);
-        if (data.isNumeric())
+        if (data.canConvertToNumeric())
             return XlsxCellData(data.doubleValue()/100.0);
         else
             return XlsxCellData("#VALUE!", XlsxCellData::T_Error);

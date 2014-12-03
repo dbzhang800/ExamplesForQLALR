@@ -71,6 +71,8 @@ public:
         Kind_BinaryArithmeticExpression,
         Kind_BinaryTextExpression,
         Kind_BinaryComparisonExpression,
+
+        Kind_ArgumentList,
         Kind_CallExpression,
     };
 
@@ -96,11 +98,11 @@ public:
 class IdentifierExpression: public ExpressionNode
 {
 public:
-    IdentifierExpression(const QStringRef &n):
+    IdentifierExpression(const QString &n):
         name (n) { kind = Kind_IdentifierExpression; }
 
 // attributes
-    QStringRef name;
+    QString name;
 };
 
 class NumericLiteral: public ExpressionNode
@@ -126,50 +128,50 @@ public:
 class UnaryPlusExpression: public ExpressionNode
 {
 public:
-    UnaryPlusExpression(Node *e):
+    UnaryPlusExpression(ExpressionNode *e):
         expression (e) { kind = Kind_UnaryPlusExpression; }
 
 // attributes
-    Node *expression;
+    ExpressionNode *expression;
 };
 
 class UnaryMinusExpression: public ExpressionNode
 {
 public:
-    UnaryMinusExpression(Node *e):
+    UnaryMinusExpression(ExpressionNode *e):
         expression (e) { kind = Kind_UnaryMinusExpression; }
 
 // attributes
-    Node *expression;
+    ExpressionNode *expression;
 };
 
 class UnaryPercentExpression: public ExpressionNode
 {
 public:
-    UnaryPercentExpression(Node *e):
+    UnaryPercentExpression(ExpressionNode *e):
         expression (e) { kind = Kind_UnaryPercentExpression; }
 
 // attributes
-    Node *expression;
+    ExpressionNode *expression;
 };
 
-class BinaryExpressionNode: public Node
+class BinaryExpressionNode: public ExpressionNode
 {
 public:
-    BinaryExpressionNode(Node *l, int o, Node *r):
+    BinaryExpressionNode(ExpressionNode *l, int o, ExpressionNode *r):
         left (l), op (o), right (r)
         { kind = Kind_BinaryExpressionNode; }
 
 // attributes
-    Node *left;
+    ExpressionNode *left;
     int op;
-    Node *right;
+    ExpressionNode *right;
 };
 
 class BinaryReferenceExpression: public BinaryExpressionNode
 {
 public:
-    BinaryReferenceExpression(Node *l, int o, Node *r):
+    BinaryReferenceExpression(ExpressionNode *l, int o, ExpressionNode *r):
         BinaryExpressionNode(l, o, r)
         { kind = Kind_BinaryReferenceExpression; }
 };
@@ -177,7 +179,7 @@ public:
 class BinaryArithmeticExpression: public BinaryExpressionNode
 {
 public:
-    BinaryArithmeticExpression(Node *l, int o, Node *r):
+    BinaryArithmeticExpression(ExpressionNode *l, int o, ExpressionNode *r):
         BinaryExpressionNode(l, o, r)
         { kind = Kind_BinaryArithmeticExpression; }
 };
@@ -185,7 +187,7 @@ public:
 class BinaryTextExpression: public BinaryExpressionNode
 {
 public:
-    BinaryTextExpression(Node *l, int o, Node *r):
+    BinaryTextExpression(ExpressionNode *l, int o, ExpressionNode *r):
         BinaryExpressionNode(l, o, r)
         { kind = Kind_BinaryTextExpression; }
 };
@@ -193,9 +195,48 @@ public:
 class BinaryComparisonExpression: public BinaryExpressionNode
 {
 public:
-    BinaryComparisonExpression(Node *l, int o, Node *r):
+    BinaryComparisonExpression(ExpressionNode *l, int o, ExpressionNode *r):
         BinaryExpressionNode(l, o, r)
         { kind = Kind_BinaryComparisonExpression; }
+};
+
+class ArgumentList: public Node
+{
+public:
+    ArgumentList(ExpressionNode *e):
+        expression (e), next (this)
+        { kind = Kind_ArgumentList; }
+
+    ArgumentList(ArgumentList *previous, ExpressionNode *e):
+        expression (e)
+    {
+        kind = Kind_ArgumentList;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    inline ArgumentList *finish ()
+    {
+        ArgumentList *front = next;
+        next = 0;
+        return front;
+    }
+
+// attributes
+    ExpressionNode *expression;
+    ArgumentList *next;
+};
+
+class CallExpression: public ExpressionNode
+{
+public:
+    CallExpression(const QString & name, ArgumentList *a):
+        name (name), arguments (a)
+        { kind = Kind_CallExpression; }
+
+// attributes
+    QString name;
+    ArgumentList *arguments;
 };
 
 } // namespace XlsxAST

@@ -74,6 +74,8 @@ public:
         double dval;
         QString *sval;
         XlsxAST::Node *Node;
+        XlsxAST::ArgumentList *ArgumentList;
+        XlsxAST::ExpressionNode *Expression;
     };
     XlsxFormulaParser();
     ~XlsxFormulaParser();
@@ -219,32 +221,83 @@ case $rule_number:
   break;
 ./
 
-PrimaryExpression: T_LPAREN Expression T_RPAREN ;
+PrimaryExpression: T_IDENTIFIER;
+/.
+  case $rule_number:
+  {
+    XlsxAST::Node *node = makeAstNode<XlsxAST::IdentifierExpression> (driver->pool, *(sym(1).sval));
+    delete sym(1).sval;
+    sym(1).Node = node;
+  }
+    break;
+./
+
+PrimaryExpression: T_LPAREN Expression T_RPAREN;
 /.
 case $rule_number:
   sym(1).Node = sym(2).Node;
   break;
 ./
 
+PrimaryExpression: CallExpression;
+CallExpression: T_IDENTIFIER Arguments;
+/.
+  case $rule_number:
+  {
+    XlsxAST::Node *node = makeAstNode<XlsxAST::CallExpression> (driver->pool, *(sym(1).sval), sym(2).ArgumentList);;
+    delete sym(1).sval;
+    sym(1).Node = node;
+  }
+    break;
+./
+
+Arguments: T_LPAREN T_RPAREN;
+/.
+  case $rule_number:
+    sym(1).Node = 0;
+    break;
+./
+
+Arguments: T_LPAREN ArgumentList T_RPAREN;
+/.
+  case $rule_number:
+   sym(1).Node = sym(2).ArgumentList->finish ();
+   break;
+./
+
+ArgumentList: Expression;
+/.
+  case $rule_number:
+    sym(1).Node = makeAstNode<XlsxAST::ArgumentList> (driver->pool, sym(1).Expression);
+    break;
+./
+
+ArgumentList: ArgumentList T_COMMA Expression;
+/.
+  case $rule_number:
+    sym(1).Node = makeAstNode<XlsxAST::ArgumentList> (driver->pool, sym(1).ArgumentList, sym(3).Expression);
+    break;
+./
+
 UnaryExpression: PrimaryExpression;
 UnaryExpression: T_PLUS UnaryExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::UnaryPlusExpression> (driver->pool, sym(2).Node);
+  sym(1).Node = makeAstNode<XlsxAST::UnaryPlusExpression> (driver->pool, sym(2).Expression);
   break;
 ./
 
 UnaryExpression: T_MINUS UnaryExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::UnaryMinusExpression> (driver->pool, sym(2).Node);
+  sym(1).Node = makeAstNode<XlsxAST::UnaryMinusExpression> (driver->pool, sym(2).Expression);
   break;
 ./
 
 UnaryExpression: UnaryExpression T_PERCENT;
 /.
   case $rule_number:
-    sym(1).Node = makeAstNode<XlsxAST::UnaryPercentExpression> (driver->pool, sym(2).Node);
+    sym(1).Node = makeAstNode<XlsxAST::UnaryPercentExpression> (driver->pool, sym(2).Expression);
     break;
 ./
 
@@ -252,7 +305,7 @@ ExponentialExpression : UnaryExpression;
 ExponentialExpression : ExponentialExpression T_XOR UnaryExpression;
 /.
   case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Exp, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Expression, XlsxAST::Exp, sym(3).Expression);
   break;
 ./
 
@@ -260,14 +313,14 @@ MultiplicativeExpression : ExponentialExpression;
 MultiplicativeExpression : MultiplicativeExpression T_STAR ExponentialExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Mul, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Expression, XlsxAST::Mul, sym(3).Expression);
   break;
 ./
 
 MultiplicativeExpression : MultiplicativeExpression T_DIVIDE ExponentialExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Div, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Expression, XlsxAST::Div, sym(3).Expression);
   break;
 ./
 
@@ -275,14 +328,14 @@ AdditiveExpression: MultiplicativeExpression;
 AdditiveExpression: AdditiveExpression T_PLUS MultiplicativeExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Add, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Expression, XlsxAST::Add, sym(3).Expression);
   break;
 ./
 
 AdditiveExpression: AdditiveExpression T_MINUS MultiplicativeExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Sub, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Expression, XlsxAST::Sub, sym(3).Expression);
   break;
 ./
 
@@ -290,7 +343,7 @@ ConcatenationExpression: AdditiveExpression;
 ConcatenationExpression: ConcatenationExpression T_AND AdditiveExpression;
 /.
   case $rule_number:
-    sym(1).Node = makeAstNode<XlsxAST::BinaryTextExpression> (driver->pool, sym(1).Node, XlsxAST::Concat, sym(3).Node);
+    sym(1).Node = makeAstNode<XlsxAST::BinaryTextExpression> (driver->pool, sym(1).Expression, XlsxAST::Concat, sym(3).Expression);
     break;
 ./
 
@@ -298,42 +351,42 @@ ComparisonExpression: ConcatenationExpression;
 ComparisonExpression: ComparisonExpression T_LT ConcatenationExpression;
 /.
   case $rule_number:
-    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Node, XlsxAST::Lt, sym(3).Node);
+    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Expression, XlsxAST::Lt, sym(3).Expression);
     break;
 ./
 
 ComparisonExpression: ComparisonExpression T_LE ConcatenationExpression;
 /.
   case $rule_number:
-    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Node, XlsxAST::Le, sym(3).Node);
+    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Expression, XlsxAST::Le, sym(3).Expression);
     break;
 ./
 
 ComparisonExpression: ComparisonExpression T_GT ConcatenationExpression;
 /.
   case $rule_number:
-    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Node, XlsxAST::Gt, sym(3).Node);
+    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Expression, XlsxAST::Gt, sym(3).Expression);
     break;
 ./
 
 ComparisonExpression: ComparisonExpression T_GE ConcatenationExpression;
 /.
   case $rule_number:
-    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Node, XlsxAST::Ge, sym(3).Node);
+    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Expression, XlsxAST::Ge, sym(3).Expression);
     break;
 ./
 
 ComparisonExpression: ComparisonExpression T_EQ ConcatenationExpression;
 /.
   case $rule_number:
-    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Node, XlsxAST::Equal, sym(3).Node);
+    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Expression, XlsxAST::Equal, sym(3).Expression);
     break;
 ./
 
 ComparisonExpression: ComparisonExpression T_NOT_EQ ConcatenationExpression;
 /.
   case $rule_number:
-    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Node, XlsxAST::NotEqual, sym(3).Node);
+    sym(1).Node = makeAstNode<XlsxAST::BinaryComparisonExpression> (driver->pool, sym(1).Expression, XlsxAST::NotEqual, sym(3).Expression);
     break;
 ./
 

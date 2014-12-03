@@ -70,6 +70,12 @@ void FormulaEngineTest::testOperator_data()
     QTest::newRow("mixCmp1") << "\"111\">222"    << XlsxCellData(true, XlsxCellData::T_Boolean);
     QTest::newRow("mixCmp2") << "\"111\">(10<2)" << XlsxCellData(false, XlsxCellData::T_Boolean);
     QTest::newRow("mixCmp3") << "100>(10<2)" << XlsxCellData(false, XlsxCellData::T_Boolean);
+
+    //Funcation call
+    QTest::newRow("NOT") << "NOT(0)" << XlsxCellData(true, XlsxCellData::T_Boolean);
+    QTest::newRow("NOT 2") << "\"result \"&NOT(0)" << XlsxCellData("result TRUE");
+    QTest::newRow("TRUE") << "TRUE()" << XlsxCellData(true, XlsxCellData::T_Boolean);
+
 }
 
 void FormulaEngineTest::testOperator()

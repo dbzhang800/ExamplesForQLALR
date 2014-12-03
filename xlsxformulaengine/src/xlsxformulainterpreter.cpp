@@ -126,6 +126,24 @@ XlsxCellData XlsxFormulaInterpreter::interpret(XlsxAST::Node *node)
 
         return XlsxCellData(QString("%1%2").arg(left.stringValue()).arg(right.stringValue()));
     }
+    case XlsxAST::Node::Kind_CallExpression: {
+        XlsxAST::CallExpression *call = static_cast<XlsxAST::CallExpression *>(node);
+        QString callName = call->name.toUpper();
+        if (callName == "PI") {
+            return XlsxCellData(3.14159265358979); //should we use M_PI here?
+        } else if (callName == "TRUE") {
+            return XlsxCellData(true, XlsxCellData::T_Boolean);
+        } else if (callName == "FALSE") {
+            return XlsxCellData(false, XlsxCellData::T_Boolean);
+        } else if (callName == "NOT") {
+            XlsxCellData arg1 = interpret(call->arguments->expression);
+            if (arg1.isError())
+                return arg1;
+            if (arg1.isString())
+                return XlsxCellData("#VALUE!", XlsxCellData::T_Error);
+            return XlsxCellData(!arg1.booleanValue(), XlsxCellData::T_Boolean);
+        }
+    }
     default:
         break;
     }

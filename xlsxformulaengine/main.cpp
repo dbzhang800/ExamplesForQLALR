@@ -55,6 +55,11 @@ void FormulaEngineTest::testOperator_data()
     QTest::newRow("str2Num")     << "\"1\"+\"33\"*2" << XlsxCellData(67);
     QTest::newRow("str2Num_2")   << "\"1ff\"+2"      << XlsxCellData("#VALUE!", XlsxCellData::T_Error);
     QTest::newRow("str2Num_3")   << "-\"1000\"%"     << XlsxCellData(-10);
+
+    //Text concatenation
+    QTest::newRow("textConcat1") << "11&22"                << XlsxCellData("1122");
+    QTest::newRow("textConcat2") << "\"Hello \"&123&-300%" << XlsxCellData("Hello 123-3");
+
 }
 
 void FormulaEngineTest::testOperator()

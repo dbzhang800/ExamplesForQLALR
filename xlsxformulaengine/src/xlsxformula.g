@@ -286,7 +286,15 @@ case $rule_number:
   break;
 ./
 
-Expression: AdditiveExpression ;
+ConcatenationExpression: AdditiveExpression;
+ConcatenationExpression: ConcatenationExpression T_AND AdditiveExpression;
+/.
+  case $rule_number:
+    sym(1).Node = makeAstNode<XlsxAST::BinaryTextExpression> (driver->pool, sym(1).Node, XlsxAST::Concat, sym(3).Node);
+    break;
+./
+
+Expression: ConcatenationExpression;
 
 /.
     } // switch

@@ -88,6 +88,17 @@ XlsxCellData XlsxFormulaInterpreter::interpret(XlsxAST::Node *node)
             break;
         }
     }
+    case XlsxAST::Node::Kind_BinaryTextExpression: {
+        XlsxAST::BinaryExpressionNode *binNode = static_cast<XlsxAST::BinaryExpressionNode *>(node);
+        XlsxCellData left = interpret(binNode->left);
+        if (left.isError())
+            return left;
+        XlsxCellData right = interpret(binNode->right);
+        if (right.isError())
+            return right;
+
+        return XlsxCellData(QString("%1%2").arg(left.stringValue()).arg(right.stringValue()));
+    }
     default:
         break;
     }

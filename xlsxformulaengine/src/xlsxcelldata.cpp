@@ -60,6 +60,9 @@ bool XlsxCellData::booleanValue() const
 
 QString XlsxCellData::stringValue() const
 {
+    if (type == T_Boolean)
+        return "TRUE" ? val.toBool() : "FALSE";
+
     return val.toString();
 }
 

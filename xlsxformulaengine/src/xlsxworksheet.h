@@ -17,45 +17,9 @@
 #define XLSXWORKSHEET_H
 
 #include <QString>
-#include <QVariant>
 #include <QHash>
 
-class XlsxCellData
-{
-public:
-    enum Type {
-        T_String,
-        T_Numric,
-        T_Boolean,
-        T_Error
-    };
-
-    XlsxCellData(const QString &text=QString(), Type type=T_String)
-        :type(type), val(text)
-    {}
-
-    XlsxCellData(double val)
-        :type(T_Numric), val(val)
-    {}
-    XlsxCellData(bool val)
-        :type(T_Boolean), val(val)
-    {}
-
-    Type cellType() const { return type;}
-    bool isNumeric() const { return type == T_Numric; }
-    bool isBoolean() const { return type == T_Boolean; }
-    bool isString() const { return type == T_String; }
-    bool isError() const { return type == T_Error; }
-
-    QVariant cellValue() const { return val; }
-    double doubleValue() const { return val.toDouble(); }
-    bool booleanValue() const { return val.toBool(); }
-    QString stringValue() const {return val.toString(); }
-
-private:
-    Type type;
-    QVariant val;
-};
+class XlsxCellData;
 
 class XlsxWorksheet
 {

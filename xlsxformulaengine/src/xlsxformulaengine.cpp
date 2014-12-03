@@ -17,7 +17,7 @@
 #include "xlsxformulaparser_p.h"
 #include "xlsxformulainterpreter_p.h"
 #include "xlsxast_p.h"
-#include "xlsxworksheet.h"
+#include "xlsxcelldata.h"
 
 XlsxFormulaEnginePrivate::XlsxFormulaEnginePrivate(XlsxFormulaEngine *q)
     :q_ptr(q), pool(0)

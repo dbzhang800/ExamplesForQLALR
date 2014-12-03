@@ -14,6 +14,7 @@
 ****************************************************************************/
 
 #include "xlsxworksheet.h"
+#include "xlsxcelldata.h"
 
 XlsxWorksheet::XlsxWorksheet()
 {

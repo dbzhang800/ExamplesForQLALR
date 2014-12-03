@@ -32,32 +32,42 @@
 namespace XlsxAST {
 
 enum Op {
-    Add,
-    Div,
-    Equal,
-    Exp, //^
-    Ge,
-    Gt,
-    Le,
-    Lt,
-    Mul,
-    NotEqual,
-    Sub
+    Add, //"+"
+    Sub, //"-"
+    Mul, //"*"
+    Div, //"\"
+    Exp, //"^"
+
+    Concat, //"&"
+
+    Equal, //"="
+    Ge, //">="
+    Gt, //">"
+    Le, //"<="
+    Lt, //"<"
+    NotEqual, //"<>"
 };
-class BinaryExpression;
+
 class Node
 {
 public:
     enum Kind {
         Kind_Node,
-        Kind_BinaryExpression,
-        Kind_CallExpression,
-        Kind_IdentifierExpression,
+        Kind_ExpressionNode,
+        Kind_BinaryExpressionNode,
+
         Kind_NumericLiteral,
         Kind_StringLiteral,
+        Kind_IdentifierExpression,
         Kind_UnaryMinusExpression,
         Kind_UnaryPlusExpression,
-        Kind_UnaryPercentExpression
+        Kind_UnaryPercentExpression,
+
+        Kind_BinaryReferenceExpression,
+        Kind_BinaryArithmeticExpression,
+        Kind_BinaryTextExpression,
+        Kind_BinaryComparisonExpression,
+        Kind_CallExpression,
     };
 
     inline Node()
@@ -72,7 +82,14 @@ public:
     int kind;
 };
 
-class IdentifierExpression: public Node
+class ExpressionNode: public Node
+{
+public:
+    ExpressionNode()
+    { kind = Kind_ExpressionNode; }
+};
+
+class IdentifierExpression: public ExpressionNode
 {
 public:
     IdentifierExpression(const QStringRef &n):
@@ -82,7 +99,7 @@ public:
     QStringRef name;
 };
 
-class NumericLiteral: public Node
+class NumericLiteral: public ExpressionNode
 {
 public:
     NumericLiteral(double v):
@@ -92,7 +109,7 @@ public:
     double value;
 };
 
-class StringLiteral: public Node
+class StringLiteral: public ExpressionNode
 {
 public:
     StringLiteral(const QString &v):
@@ -102,7 +119,7 @@ public:
     QString value;
 };
 
-class UnaryPlusExpression: public Node
+class UnaryPlusExpression: public ExpressionNode
 {
 public:
     UnaryPlusExpression(Node *e):
@@ -112,7 +129,7 @@ public:
     Node *expression;
 };
 
-class UnaryMinusExpression: public Node
+class UnaryMinusExpression: public ExpressionNode
 {
 public:
     UnaryMinusExpression(Node *e):
@@ -122,7 +139,7 @@ public:
     Node *expression;
 };
 
-class UnaryPercentExpression: public Node
+class UnaryPercentExpression: public ExpressionNode
 {
 public:
     UnaryPercentExpression(Node *e):
@@ -132,17 +149,49 @@ public:
     Node *expression;
 };
 
-class BinaryExpression: public Node
+class BinaryExpressionNode: public Node
 {
 public:
-    BinaryExpression(Node *l, int o, Node *r):
+    BinaryExpressionNode(Node *l, int o, Node *r):
         left (l), op (o), right (r)
-        { kind = Kind_BinaryExpression; }
+        { kind = Kind_BinaryExpressionNode; }
 
 // attributes
     Node *left;
     int op;
     Node *right;
+};
+
+class BinaryReferenceExpression: public BinaryExpressionNode
+{
+public:
+    BinaryReferenceExpression(Node *l, int o, Node *r):
+        BinaryExpressionNode(l, o, r)
+        { kind = Kind_BinaryReferenceExpression; }
+};
+
+class BinaryArithmeticExpression: public BinaryExpressionNode
+{
+public:
+    BinaryArithmeticExpression(Node *l, int o, Node *r):
+        BinaryExpressionNode(l, o, r)
+        { kind = Kind_BinaryArithmeticExpression; }
+};
+
+class BinaryTextExpression: public BinaryExpressionNode
+{
+public:
+    BinaryTextExpression(Node *l, int o, Node *r):
+        BinaryExpressionNode(l, o, r)
+        { kind = Kind_BinaryTextExpression; }
+};
+
+class BinaryComparisonExpression: public BinaryExpressionNode
+{
+public:
+    BinaryComparisonExpression(Node *l, int o, Node *r):
+        BinaryExpressionNode(l, o, r)
+        { kind = Kind_BinaryComparisonExpression; }
 };
 
 } // namespace XlsxAST

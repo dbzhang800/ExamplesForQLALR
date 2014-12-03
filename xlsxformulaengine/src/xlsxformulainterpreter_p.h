@@ -16,8 +16,8 @@
 #define XLSXFORMULAINTERPRETER_P_H
 
 #include "xlsxast_p.h"
-#include "xlsxworksheet.h"
 
+class XlsxCellData;
 class XlsxFormulaEnginePrivate;
 
 class XlsxFormulaInterpreter

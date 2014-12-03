@@ -33,7 +33,7 @@ L			[a-zA-Z_]
 H			[a-fA-F0-9]
 E			[Ee][+-]?{D}+
 
-%s str
+%x str
 
 %%
 
@@ -80,6 +80,7 @@ char *string_buf_ptr;
 "{"         { return T_LBRACE; }
 "}"         { return T_RBRACE; }
 ":"         { return T_COLON; }
+";"         { return T_SEMICOLON; }
 "+"         { return T_PLUS; }
 "-"         { return T_MINUS; }
 "/"         { return T_DIVIDE; }

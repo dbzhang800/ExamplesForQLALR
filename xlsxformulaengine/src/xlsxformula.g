@@ -32,6 +32,8 @@
 %token T_LBRACE "{"
 %token T_RBRACE "}"
 %token T_COLON ":"
+%token T_SPACE "SPACE_20"
+%token T_SEMICOLON ";"
 %token T_COMMA ","
 %token T_XOR "^"
 %token T_PLUS "+"
@@ -199,6 +201,17 @@ case $rule_number:
   break;
 ./
 
+PrimaryExpression: T_STRING_LITERAL ;
+/.
+case $rule_number:
+{
+  XlsxAST::Node *node = makeAstNode<XlsxAST::StringLiteral> (driver->pool, *sym(1).sval);
+  delete sym(1).sval;
+  sym(1).Node = node;
+}
+  break;
+./
+
 PrimaryExpression: T_NUMRIC_LITERAL ;
 /.
 case $rule_number:
@@ -239,7 +252,7 @@ ExponentialExpression : UnaryExpression;
 ExponentialExpression : ExponentialExpression T_XOR UnaryExpression;
 /.
   case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryExpression> (driver->pool, sym(1).Node, XlsxAST::Exp, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Exp, sym(3).Node);
   break;
 ./
 
@@ -247,14 +260,14 @@ MultiplicativeExpression : ExponentialExpression;
 MultiplicativeExpression : MultiplicativeExpression T_STAR ExponentialExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryExpression> (driver->pool, sym(1).Node, XlsxAST::Mul, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Mul, sym(3).Node);
   break;
 ./
 
 MultiplicativeExpression : MultiplicativeExpression T_DIVIDE ExponentialExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryExpression> (driver->pool, sym(1).Node, XlsxAST::Div, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Div, sym(3).Node);
   break;
 ./
 
@@ -262,14 +275,14 @@ AdditiveExpression: MultiplicativeExpression;
 AdditiveExpression: AdditiveExpression T_PLUS MultiplicativeExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryExpression> (driver->pool, sym(1).Node, XlsxAST::Add, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Add, sym(3).Node);
   break;
 ./
 
 AdditiveExpression: AdditiveExpression T_MINUS MultiplicativeExpression;
 /.
 case $rule_number:
-  sym(1).Node = makeAstNode<XlsxAST::BinaryExpression> (driver->pool, sym(1).Node, XlsxAST::Sub, sym(3).Node);
+  sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (driver->pool, sym(1).Node, XlsxAST::Sub, sym(3).Node);
   break;
 ./
 

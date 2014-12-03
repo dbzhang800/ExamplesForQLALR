@@ -14,7 +14,7 @@
 ****************************************************************************/
 
 #include "xlsxformulaengine.h"
-#include "xlsxworksheet.h"
+#include "xlsxcelldata.h"
 #include <QtTest>
 
 class FormulaEngineTest : public QObject
@@ -25,37 +25,44 @@ public:
     FormulaEngineTest();
 
 private Q_SLOTS:
-    void testArithmaticOperator_data();
-    void testArithmaticOperator();
+    void testOperator_data();
+    void testOperator();
 };
 
 FormulaEngineTest::FormulaEngineTest()
 {
 }
 
-void FormulaEngineTest::testArithmaticOperator_data()
+void FormulaEngineTest::testOperator_data()
 {
     QTest::addColumn<QString>("formula");
-    QTest::addColumn<double>("result");
+    QTest::addColumn<XlsxCellData>("result");
 
-    QTest::newRow("+") << "1+2+3++2" << 8.0;
-    QTest::newRow("-") << "1-3----1" << -1.0;
-    QTest::newRow("*") << "1+2*3" << 7.0;
-    QTest::newRow("/") << "10+2/4" << 10.5;
-    QTest::newRow("^") << "-3^2" << 9.0;
-    QTest::newRow("^ second") << "0-3^2" << -9.0;
-    QTest::newRow("^ third") << "-3^2*2^3" << 72.0;
-    QTest::newRow("%") << "+++++20000%%+++++1" << 3.0;
-    QTest::newRow("()") << "(1+3)*4+2*(3/2)-2" << 17.;
+    //Simple
+    QTest::newRow("+")     << "1+2+3++2"    << XlsxCellData(8);
+    QTest::newRow("-")     << "1-3----1"    << XlsxCellData(-1);
+    QTest::newRow("*")     << "1+2*3"       << XlsxCellData(7);
+    QTest::newRow("/")     << "10+2/4"      << XlsxCellData(10.5);
+    QTest::newRow("exp1")  << "-3^2"        << XlsxCellData(9);
+    QTest::newRow("exp2")  << "0-3^2"       << XlsxCellData(-9);
+    QTest::newRow("exp3")  << "-3^2*2^3"    << XlsxCellData(72);
+    QTest::newRow("space") << " 1 + 2   " << XlsxCellData(3.0);
+
+    QTest::newRow("%")     << "+++++20000%%+++++1" << XlsxCellData(3);
+    QTest::newRow("()")    << "(1+3)*4+2*(3/2)-2"  << XlsxCellData(17);
+
+    //Convert string to number if convertable.
+    QTest::newRow("str2Num")     << "\"1\"+\"33\"*2" << XlsxCellData(67);
+    QTest::newRow("str2Num_2")   << "\"1ff\"+2"      << XlsxCellData("#VALUE!", XlsxCellData::T_Error);
 }
 
-void FormulaEngineTest::testArithmaticOperator()
+void FormulaEngineTest::testOperator()
 {
     QFETCH(QString, formula);
-    QFETCH(double, result);
+    QFETCH(XlsxCellData, result);
 
     XlsxFormulaEngine engine;
-    QCOMPARE(engine.evaluate(formula).doubleValue(), result);
+    QCOMPARE(engine.evaluate(formula), result);
 }
 
 QTEST_APPLESS_MAIN(FormulaEngineTest)

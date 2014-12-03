@@ -32,6 +32,10 @@
 namespace XlsxAST {
 
 enum Op {
+    Range, // ":"
+    Union, // ","
+    Intersection, // " "
+
     Add, //"+"
     Sub, //"-"
     Mul, //"*"

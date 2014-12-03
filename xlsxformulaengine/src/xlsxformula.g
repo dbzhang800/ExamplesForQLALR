@@ -338,6 +338,13 @@ ComparisonExpression: ComparisonExpression T_NOT_EQ ConcatenationExpression;
 ./
 
 Expression: ComparisonExpression;
+Expression: Expression T_SPACE;
+Expression: T_SPACE Expression;
+/.
+  case $rule_number:
+    sym(1).Node = sym(2).Node;
+    break;
+./
 
 /.
     } // switch

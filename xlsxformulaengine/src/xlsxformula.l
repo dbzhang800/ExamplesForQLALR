@@ -73,30 +73,32 @@ char *string_buf_ptr;
 {D}*"."{D}+({E})?   { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }
 {D}+"."{D}*({E})?   { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }
 
+[ ]+        { return T_SPACE; }
+
 "("         { return T_LPAREN; }
 ")"         { return T_RPAREN; }
 "["         { return T_LBRACKET; }
 "]"         { return T_RBRACKET; }
 "{"         { return T_LBRACE; }
 "}"         { return T_RBRACE; }
-":"         { return T_COLON; }
-";"         { return T_SEMICOLON; }
-"+"         { return T_PLUS; }
-"-"         { return T_MINUS; }
-"/"         { return T_DIVIDE; }
-"*"         { return T_STAR; }
-"^"         { return T_XOR; }
-","         { return T_COMMA; }
-"%"         { return T_PERCENT; }
-"&"         { return T_AND; }
-"="         { return T_EQ; }
-"<"         { return T_LT; }
-">"         { return T_GT; }
-"<>"        { return T_NOT_EQ; }
-"<="        { return T_LE; }
-">="        { return T_GE; }
 
+[ ]*":"[ ]*         { return T_COLON; }
+[ ]*";"[ ]*         { return T_SEMICOLON; }
+[ ]*"+"[ ]*         { return T_PLUS; }
+[ ]*"-"[ ]*         { return T_MINUS; }
+[ ]*"/"[ ]*         { return T_DIVIDE; }
+[ ]*"*"[ ]*         { return T_STAR; }
+[ ]*"^"[ ]*         { return T_XOR; }
+[ ]*","[ ]*         { return T_COMMA; }
+[ ]*"%"[ ]*         { return T_PERCENT; }
+[ ]*"&"[ ]*         { return T_AND; }
+[ ]*"="[ ]*         { return T_EQ; }
+[ ]*"<"[ ]*         { return T_LT; }
+[ ]*">"[ ]*         { return T_GT; }
+[ ]*"<>"[ ]*        { return T_NOT_EQ; }
+[ ]*"<="[ ]*        { return T_LE; }
+[ ]*">="[ ]*        { return T_GE; }
 
-[ \t\v\f\n]                   { /* eat me */ }
+[\t\v\f\n]                   { /* eat me */ }
 
 %%

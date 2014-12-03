@@ -46,7 +46,10 @@ void FormulaEngineTest::testOperator_data()
     QTest::newRow("exp1")  << "-3^2"        << XlsxCellData(9);
     QTest::newRow("exp2")  << "0-3^2"       << XlsxCellData(-9);
     QTest::newRow("exp3")  << "-3^2*2^3"    << XlsxCellData(72);
-    QTest::newRow("space") << " 1 + 2   "   << XlsxCellData(3.0);
+
+    QTest::newRow("space1")<< " 1 + 2   "          << XlsxCellData(3.0);
+    QTest::newRow("space2")<< " + 1 + - -  2  "    << XlsxCellData(3.0);
+    QTest::newRow("space3")<< " + ( 1 )+ - -  2 "  << XlsxCellData(3.0);
 
     QTest::newRow("%")     << "+++++20000%%+++++1" << XlsxCellData(3);
     QTest::newRow("()")    << "(1+3)*4+2*(3/2)-2"  << XlsxCellData(17);

@@ -85,20 +85,47 @@ QString XlsxCellData::stringValue() const
 
 bool XlsxCellData::operator == (const XlsxCellData &other) const
 {
+    //Deal with null data
+    if (isNull()) {
+        if (other.isString())
+            return other.stringValue().isEmpty();
+        return !other.doubleValue();
+    }
+    if (other.isNull()) {
+        if (isString())
+            return stringValue().isEmpty();
+        return !doubleValue();
+    }
+
+    //Normal compare
     return type == other.type && val == other.val;
 }
 
 bool XlsxCellData::operator != (const XlsxCellData &other) const
 {
-    return type != other.type || val != other.val;
+    return !(*this == other);
 }
 
 bool XlsxCellData::operator < (const XlsxCellData &other) const
 {
+    //Deal with null data
+    if (isNull()) {
+        if (other.isString())
+            return !other.stringValue().isEmpty();
+        return 0 < other.doubleValue();
+    }
+
+    if (other.isNull()) {
+        if (isString())
+            return false;
+        return doubleValue() < 0;
+    }
+
+    //Normal compare
     if (type == other.type) {
         if (type == T_String)
-            return val.toString() < other.val.toString();
-        return val.toDouble() < other.val.toDouble();
+            return stringValue() < other.stringValue();
+        return doubleValue() < other.doubleValue();
     }
 
     return type < other.type;

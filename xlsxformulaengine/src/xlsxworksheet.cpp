@@ -22,17 +22,29 @@ XlsxWorksheet::XlsxWorksheet()
 
 void XlsxWorksheet::addCell(const QString &cellRef, const XlsxCellData &data)
 {
-    cellTable[cellRef] = data;
+    cellTable[cellRef.toUpper()] = data;
 }
 
-XlsxCellData XlsxWorksheet::cellAt(const QString &cellRef)
+XlsxCellData XlsxWorksheet::cellAt(const QString &cellRef) const
 {
-    if (cellTable.contains(cellRef))
-        return cellTable[cellRef];
-    return XlsxCellData(QString(), XlsxCellData::T_String);
+    if (cellTable.contains(cellRef.toUpper()))
+        return cellTable[cellRef.toUpper()];
+    return XlsxCellData();
 }
 
 void XlsxWorksheet::defineName(const QString &name, const QString &formula)
 {
-    definedNames[name] = formula;
+    definedNames[name.toUpper()] = formula;
+}
+
+bool XlsxWorksheet::hasDefinedName(const QString &name) const
+{
+    return definedNames.contains(name.toUpper());
+}
+
+QString XlsxWorksheet::getDefinedNameFormula(const QString &name) const
+{
+    if (definedNames.contains(name.toUpper()))
+        return definedNames[name.toUpper()];
+    return QString();
 }

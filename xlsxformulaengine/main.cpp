@@ -15,6 +15,7 @@
 
 #include "xlsxformulaengine.h"
 #include "xlsxcelldata.h"
+#include "xlsxworksheet.h"
 #include <QtTest>
 
 class FormulaEngineTest : public QObject
@@ -27,6 +28,9 @@ public:
 private Q_SLOTS:
     void testOperator_data();
     void testOperator();
+
+    void testCellReference_data();
+    void testCellReference();
 };
 
 FormulaEngineTest::FormulaEngineTest()
@@ -83,6 +87,38 @@ void FormulaEngineTest::testOperator()
     QFETCH(XlsxCellData, result);
 
     XlsxFormulaEngine engine(0);
+    QCOMPARE(engine.evaluate(formula), result);
+}
+
+void FormulaEngineTest::testCellReference_data()
+{
+    QTest::addColumn<QString>("formula");
+    QTest::addColumn<XlsxCellData>("result");
+
+    QTest::newRow("A1") << "A1" << XlsxCellData(100);
+    QTest::newRow("A1A2") << "A1*A1&A2" << XlsxCellData("10000Qt!");
+    QTest::newRow("name") << "A1*TEST" << XlsxCellData(700);
+    QTest::newRow("name2") << "A1*TEST2" << XlsxCellData("#NAME?", XlsxCellData::T_Error);
+
+    QTest::newRow("empty cell 1") << "A3=0" << XlsxCellData(true, XlsxCellData::T_Boolean);
+    QTest::newRow("empty cell 2") << "A3=FALSE" << XlsxCellData(true, XlsxCellData::T_Boolean);
+    QTest::newRow("empty cell 3") << "A3=FALSE()" << XlsxCellData(true, XlsxCellData::T_Boolean);
+    QTest::newRow("empty cell 4") << "A3=\"\"" << XlsxCellData(true, XlsxCellData::T_Boolean);
+    QTest::newRow("empty cell 5") << "A3=\"0\"" << XlsxCellData(false, XlsxCellData::T_Boolean);
+    QTest::newRow("empry cell 6") << "A3&\"Qt\"" << XlsxCellData("Qt");
+}
+
+void FormulaEngineTest::testCellReference()
+{
+    XlsxWorksheet sheet;
+    sheet.addCell("A1", XlsxCellData(100));
+    sheet.addCell("A2", XlsxCellData("Qt!"));
+    sheet.defineName("TEST", "1+2*3");
+
+    QFETCH(QString, formula);
+    QFETCH(XlsxCellData, result);
+
+    XlsxFormulaEngine engine(&sheet);
     QCOMPARE(engine.evaluate(formula), result);
 }
 

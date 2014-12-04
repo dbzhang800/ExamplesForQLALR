@@ -76,6 +76,7 @@ public:
         XlsxAST::Node *Node;
         XlsxAST::ArgumentList *ArgumentList;
         XlsxAST::ExpressionNode *Expression;
+        XlsxAST::IdentifierExpression *Identifier;
     };
     XlsxFormulaParser();
     ~XlsxFormulaParser();
@@ -221,8 +222,8 @@ case $rule_number:
   sym(1).Node = makeAstNode<XlsxAST::NumericLiteral> (pool, sym(1).dval);
   break;
 ./
-
-PrimaryExpression: T_IDENTIFIER;
+PrimaryExpression: NameExpression;
+NameExpression: T_IDENTIFIER;
 /.
   case $rule_number:
   {
@@ -241,14 +242,10 @@ case $rule_number:
 ./
 
 PrimaryExpression: CallExpression;
-CallExpression: T_IDENTIFIER Arguments;
+CallExpression: NameExpression Arguments;
 /.
   case $rule_number:
-  {
-    XlsxAST::Node *node = makeAstNode<XlsxAST::CallExpression> (pool, *(sym(1).sval), sym(2).ArgumentList);;
-    delete sym(1).sval;
-    sym(1).Node = node;
-  }
+    sym(1).Node = makeAstNode<XlsxAST::CallExpression> (pool, sym(1).Identifier->name, sym(2).ArgumentList);
     break;
 ./
 

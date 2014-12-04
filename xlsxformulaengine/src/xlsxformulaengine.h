@@ -30,7 +30,10 @@ public:
     explicit XlsxFormulaEngine(XlsxWorksheet *sheet, QObject *parent = 0);
     ~XlsxFormulaEngine();
 
-    XlsxCellData evaluate(const QString &formula);
+    XlsxCellData evaluate(const QString &formula, const QString &cellRef = QString());
+
+    bool hasError() const;
+    QString errorString() const;
 
 private:
     XlsxFormulaEnginePrivate * d_ptr;

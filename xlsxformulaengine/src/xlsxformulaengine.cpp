@@ -19,6 +19,8 @@
 #include "xlsxcelldata.h"
 #include "xlsxworksheet.h"
 
+#include <QRegularExpression>
+
 XlsxFormulaEnginePrivate::XlsxFormulaEnginePrivate(XlsxFormulaEngine *q)
     :q_ptr(q)
 {
@@ -39,20 +41,36 @@ XlsxFormulaEngine::~XlsxFormulaEngine()
     delete d_ptr;
 }
 
-XlsxCellData XlsxFormulaEngine::evaluate(const QString &formula)
+bool XlsxFormulaEngine::hasError() const
+{
+    return errorString().isNull();
+}
+
+QString XlsxFormulaEngine::errorString() const
+{
+    Q_D(const XlsxFormulaEngine);
+    return d->errorString;
+}
+
+XlsxCellData XlsxFormulaEngine::evaluate(const QString &formula, const QString &cellRef)
 {
     Q_D(XlsxFormulaEngine);
+    d->errorString = QString();//null string means no error.
+
     XlsxMemoryPool pool;
 
     XlsxFormulaParser parser;
-    parser.parse(formula, &pool);
+    if (!parser.parse(formula, &pool)) {
+        d->errorString = "parser formula failed.";
+        return XlsxCellData();
+    }
 
-    XlsxCellData data = d->interpret(parser.sym(1).Node);
+    XlsxCellData data = d->interpret(parser.sym(1).Node, cellRef);
 
     return data;
 }
 
-XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node)
+XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node, const QString &cellRef)
 {
     switch (node->kind) {
 //    case XlsxAST::Node::Kind_Node:
@@ -69,20 +87,35 @@ XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node)
     }
     case XlsxAST::Node::Kind_IdentifierExpression: {
         //TODO
-        return XlsxCellData();
+        QRegularExpression re(QStringLiteral("^\\$?([A-Z]{1,3})\\$?(\\d+)$"));
+        QString text = static_cast<XlsxAST::IdentifierExpression *>(node)->name.toUpper();
+        if (text == "TRUE") {
+            return XlsxCellData(true, XlsxCellData::T_Boolean);
+        } else if (text == "FALSE") {
+            return XlsxCellData(false, XlsxCellData::T_Boolean);
+        } else if (re.match(text).hasMatch()) {
+            return sheet->cellAt(text);
+//        } else if (...) {
+//            return sheet->cellAt(text);
+        } else {
+            if (sheet->hasDefinedName(text))
+                return q_ptr->evaluate(sheet->getDefinedNameFormula(text));
+
+            return XlsxCellData("#NAME?", XlsxCellData::T_Error);
+        }
     }
     case XlsxAST::Node::Kind_UnaryPlusExpression: {
-        return interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression);
+        return interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression, cellRef);
     }
     case XlsxAST::Node::Kind_UnaryMinusExpression: {
-        XlsxCellData data = interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression);
+        XlsxCellData data = interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression, cellRef);
         if (data.canConvertToNumeric())
             return XlsxCellData(-data.doubleValue());
         else
             return XlsxCellData("#VALUE!", XlsxCellData::T_Error);
     }
     case XlsxAST::Node::Kind_UnaryPercentExpression: {
-        XlsxCellData data = interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression);
+        XlsxCellData data = interpret(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression, cellRef);
         if (data.canConvertToNumeric())
             return XlsxCellData(data.doubleValue()/100.0);
         else
@@ -90,10 +123,10 @@ XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node)
     }
     case XlsxAST::Node::Kind_BinaryArithmeticExpression: {
         XlsxAST::BinaryExpressionNode *binNode = static_cast<XlsxAST::BinaryExpressionNode *>(node);
-        XlsxCellData left = interpret(binNode->left);
+        XlsxCellData left = interpret(binNode->left, cellRef);
         if (left.isError())
             return left;
-        XlsxCellData right = interpret(binNode->right);
+        XlsxCellData right = interpret(binNode->right, cellRef);
         if (right.isError())
             return right;
 
@@ -117,10 +150,10 @@ XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node)
     }
     case XlsxAST::Node::Kind_BinaryTextExpression: {
         XlsxAST::BinaryExpressionNode *binNode = static_cast<XlsxAST::BinaryExpressionNode *>(node);
-        XlsxCellData left = interpret(binNode->left);
+        XlsxCellData left = interpret(binNode->left, cellRef);
         if (left.isError())
             return left;
-        XlsxCellData right = interpret(binNode->right);
+        XlsxCellData right = interpret(binNode->right, cellRef);
         if (right.isError())
             return right;
 
@@ -128,10 +161,10 @@ XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node)
     }
     case XlsxAST::Node::Kind_BinaryComparisonExpression: {
         XlsxAST::BinaryExpressionNode *binNode = static_cast<XlsxAST::BinaryExpressionNode *>(node);
-        XlsxCellData left = interpret(binNode->left);
+        XlsxCellData left = interpret(binNode->left, cellRef);
         if (left.isError())
             return left;
-        XlsxCellData right = interpret(binNode->right);
+        XlsxCellData right = interpret(binNode->right, cellRef);
         if (right.isError())
             return right;
         switch (binNode->op) {
@@ -163,7 +196,7 @@ XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node)
         } else if (callName == "FALSE") {
             return XlsxCellData(false, XlsxCellData::T_Boolean);
         } else if (callName == "NOT") {
-            XlsxCellData arg1 = interpret(call->arguments->expression);
+            XlsxCellData arg1 = interpret(call->arguments->expression, cellRef);
             if (arg1.isError())
                 return arg1;
             if (arg1.isString())

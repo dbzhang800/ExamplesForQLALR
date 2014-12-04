@@ -61,9 +61,6 @@ char *string_buf_ptr;
                        *string_buf_ptr++ = *yptr++;
                }
 
-
-\$?([a-zA-Z]{1,3})\$?([1-9][0-9]{0,5}|10[0-9]{5})
-
 [a-zA-Z_]([a-zA-Z0-9_])*  {
                               sym(1).sval = new QString(QString::fromUtf8(yytext));
                               return T_IDENTIFIER;

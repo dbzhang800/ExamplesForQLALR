@@ -27,9 +27,11 @@ public:
     XlsxWorksheet();
 
     void addCell(const QString &cellRef, const XlsxCellData &data);
-    XlsxCellData cellAt(const QString &cellRef);
+    XlsxCellData cellAt(const QString &cellRef) const;
 
     void defineName(const QString &name, const QString &formula);
+    bool hasDefinedName(const QString &name) const;
+    QString getDefinedNameFormula(const QString &name) const;
 
 private:
     QHash<QString, XlsxCellData> cellTable;

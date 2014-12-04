@@ -28,9 +28,10 @@ class XlsxFormulaEnginePrivate
 public:
     XlsxFormulaEnginePrivate(XlsxFormulaEngine *q);
 
-    XlsxCellData interpret(XlsxAST::Node *node);
+    XlsxCellData interpret(XlsxAST::Node *node, const QString &cellRef);
 
     XlsxWorksheet *sheet;
+    QString errorString;
     XlsxFormulaEngine * q_ptr;
 };
 

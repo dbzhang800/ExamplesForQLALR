@@ -75,7 +75,6 @@ void FormulaEngineTest::testOperator_data()
     QTest::newRow("NOT") << "NOT(0)" << XlsxCellData(true, XlsxCellData::T_Boolean);
     QTest::newRow("NOT 2") << "\"result \"&NOT(0)" << XlsxCellData("result TRUE");
     QTest::newRow("TRUE") << "TRUE()" << XlsxCellData(true, XlsxCellData::T_Boolean);
-
 }
 
 void FormulaEngineTest::testOperator()
@@ -83,7 +82,7 @@ void FormulaEngineTest::testOperator()
     QFETCH(QString, formula);
     QFETCH(XlsxCellData, result);
 
-    XlsxFormulaEngine engine;
+    XlsxFormulaEngine engine(0);
     QCOMPARE(engine.evaluate(formula), result);
 }
 

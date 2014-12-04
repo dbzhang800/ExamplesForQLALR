@@ -18,15 +18,19 @@
 #include "xlsxformulaengine.h"
 #include "xlsxmemorypool_p.h"
 
+namespace XlsxAST {
+    class Node;
+}
+class XlsxWorksheet;
 class XlsxFormulaEnginePrivate
 {
     Q_DECLARE_PUBLIC(XlsxFormulaEngine)
 public:
     XlsxFormulaEnginePrivate(XlsxFormulaEngine *q);
 
-    QString formulaString;
-    XlsxMemoryPool *pool;
+    XlsxCellData interpret(XlsxAST::Node *node);
 
+    XlsxWorksheet *sheet;
     XlsxFormulaEngine * q_ptr;
 };
 

@@ -18,6 +18,7 @@
 
 #include <QObject>
 class XlsxCellData;
+class XlsxWorksheet;
 class XlsxFormulaEnginePrivate;
 
 class XlsxFormulaEngine : public QObject
@@ -26,7 +27,7 @@ class XlsxFormulaEngine : public QObject
     Q_DECLARE_PRIVATE(XlsxFormulaEngine)
 
 public:
-    explicit XlsxFormulaEngine(QObject *parent = 0);
+    explicit XlsxFormulaEngine(XlsxWorksheet *sheet, QObject *parent = 0);
     ~XlsxFormulaEngine();
 
     XlsxCellData evaluate(const QString &formula);

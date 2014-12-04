@@ -30,7 +30,8 @@ public:
         T_Error
     };
 
-    XlsxCellData(const QString &text=QString(), Type type=T_String);
+    XlsxCellData();
+    XlsxCellData(const QString &text, Type type=T_String);
     XlsxCellData(double val, Type type = T_Numeric);
     XlsxCellData(const XlsxCellData &other);
     XlsxCellData &operator=(const XlsxCellData &rhs);
@@ -40,6 +41,7 @@ public:
     bool isBoolean() const { return type == T_Boolean; }
     bool isString() const { return type == T_String; }
     bool isError() const { return type == T_Error; }
+    bool isNull() const;
     bool canConvertToNumeric() const;
 
     QVariant cellValue() const { return val; }

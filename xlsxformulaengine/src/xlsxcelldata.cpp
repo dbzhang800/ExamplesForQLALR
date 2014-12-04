@@ -15,6 +15,13 @@
 
 #include "xlsxcelldata.h"
 
+XlsxCellData::XlsxCellData()
+    :type(T_Numeric)
+{
+    //Treat as 0 when used in + - * / or ...
+    //Treat as "" when used in &
+}
+
 XlsxCellData::XlsxCellData(const QString &text, Type type)
     :type(type), val(text)
 {}
@@ -32,6 +39,11 @@ XlsxCellData &XlsxCellData::operator=(const XlsxCellData &rhs)
     type = rhs.type;
     val = rhs.val;
     return *this;
+}
+
+bool XlsxCellData::isNull() const
+{
+    return type == T_Numeric && !val.isValid();
 }
 
 bool XlsxCellData::canConvertToNumeric() const
@@ -62,6 +74,11 @@ QString XlsxCellData::stringValue() const
 {
     if (type == T_Boolean)
         return val.toBool() ? QString("TRUE") : QString("FALSE");
+
+    if (type == T_Numeric) {
+        //Todo, for Numeric, numFmt should be considered.
+        return val.toString();
+    }
 
     return val.toString();
 }

@@ -21,6 +21,8 @@
 
 #include <QRegularExpression>
 
+#include <math.h>
+
 XlsxFormulaEnginePrivate::XlsxFormulaEnginePrivate(XlsxFormulaEngine *q)
     :q_ptr(q)
 {

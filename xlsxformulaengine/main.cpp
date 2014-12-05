@@ -58,6 +58,9 @@ void FormulaEngineTest::testOperator_data()
     QTest::newRow("%") << "+++++20000%%+++++1" << XlsxCellData(3);
     QTest::newRow("()") << "(1+3)*4+2*(3/2)-2" << XlsxCellData(17);
 
+    //Error.
+    QTest::newRow("100/0") << "100/0" << XlsxCellData("#DIV/0!", XlsxCellData::T_Error);
+
     //Convert string to number if convertable.
     QTest::newRow("str2Num") << "\"1\"+\"33\"*2" << XlsxCellData(67);
     QTest::newRow("str2Num_2") << "\"1ff\"+2" << XlsxCellData("#VALUE!", XlsxCellData::T_Error);
@@ -74,6 +77,11 @@ void FormulaEngineTest::testOperator_data()
     QTest::newRow("mixCmp1") << "\"111\">222" << XlsxCellData(true, XlsxCellData::T_Boolean);
     QTest::newRow("mixCmp2") << "\"111\">(10<2)" << XlsxCellData(false, XlsxCellData::T_Boolean);
     QTest::newRow("mixCmp3") << "100>(10<2)" << XlsxCellData(false, XlsxCellData::T_Boolean);
+
+    //Literal
+    QTest::newRow("FALSE literal") << "FALSE" << XlsxCellData(false, XlsxCellData::T_Boolean);
+    QTest::newRow("#NAME? literal") << "#NAME?" << XlsxCellData("#NAME?", XlsxCellData::T_Error);
+    QTest::newRow("#DIV/0! literal") << "#DIV/0!" << XlsxCellData("#DIV/0!", XlsxCellData::T_Error);
 
     //Funcation call
     QTest::newRow("NOT") << "NOT(0)" << XlsxCellData(true, XlsxCellData::T_Boolean);

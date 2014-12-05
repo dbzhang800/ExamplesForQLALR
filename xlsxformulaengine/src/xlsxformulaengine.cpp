@@ -57,10 +57,8 @@ XlsxCellData XlsxFormulaEngine::evaluate(const QString &formula, const QString &
     Q_D(XlsxFormulaEngine);
     d->errorString = QString();//null string means no error.
 
-    XlsxMemoryPool pool;
-
-    XlsxFormulaParser parser;
-    if (!parser.parse(formula, &pool)) {
+    XlsxFormulaParser parser(formula);
+    if (!parser.parse()) {
         d->errorString = "parser formula failed.";
         return XlsxCellData();
     }
@@ -82,13 +80,17 @@ XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node, const QStr
         return XlsxCellData(val);
     }
     case XlsxAST::Node::Kind_StringLiteral: {
-        QString text = static_cast<XlsxAST::StringLiteral *>(node)->value;
+        QString text = *(static_cast<XlsxAST::StringLiteral *>(node)->value);
         return XlsxCellData(text, XlsxCellData::T_String);
+    }
+    case XlsxAST::Node::Kind_ErrorConstantLiteral: {
+        QString text = *(static_cast<XlsxAST::ErrorConstantLiteral *>(node)->value);
+        return XlsxCellData(text, XlsxCellData::T_Error);
     }
     case XlsxAST::Node::Kind_IdentifierExpression: {
         //TODO
         QRegularExpression re(QStringLiteral("^\\$?([A-Z]{1,3})\\$?(\\d+)$"));
-        QString text = static_cast<XlsxAST::IdentifierExpression *>(node)->name.toUpper();
+        QString text = static_cast<XlsxAST::IdentifierExpression *>(node)->name->toUpper();
         if (text == "TRUE") {
             return XlsxCellData(true, XlsxCellData::T_Boolean);
         } else if (text == "FALSE") {
@@ -141,6 +143,8 @@ XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node, const QStr
         case XlsxAST::Mul:
             return XlsxCellData(left.doubleValue() * right.doubleValue());
         case XlsxAST::Div:
+            if (!right.doubleValue())
+                return XlsxCellData("#DIV/0!", XlsxCellData::T_Error);
             return XlsxCellData(left.doubleValue() / right.doubleValue());
         case XlsxAST::Exp:
             return XlsxCellData(pow(left.doubleValue(), right.doubleValue()));
@@ -188,7 +192,7 @@ XlsxCellData XlsxFormulaEnginePrivate::interpret(XlsxAST::Node *node, const QStr
     }
     case XlsxAST::Node::Kind_CallExpression: {
         XlsxAST::CallExpression *call = static_cast<XlsxAST::CallExpression *>(node);
-        QString callName = call->name.toUpper();
+        QString callName = call->name->toUpper();
         if (callName == "PI") {
             return XlsxCellData(3.14159265358979); //should we use M_PI here?
         } else if (callName == "TRUE") {

@@ -19,8 +19,7 @@
 
 %token T_STRING_LITERAL "string literal"
 
-%token T_REF_CONSTANT "#REF"
-%token T_ERROR_CONSTANT "#DIV/0 etc."
+%token T_ERROR_CONSTANT "#DIV/0! etc."
 -- %token T_TRUE_LITERAL "TRUE"
 -- %token T_FALSE_LITERAL "FALSE"
 %token T_NUMRIC_LITERAL "numric literal"
@@ -71,10 +70,12 @@
 #ifndef XLSXFORMULAPARSER_P_H
 #define XLSXFORMULAPARSER_P_H
 
-#include <QSharedDataPointer>
-#include <QVarLengthArray>
 #include "xlsxformulagrammar_p.h"
 #include "xlsxast_p.h"
+
+#include <QSharedDataPointer>
+#include <QVarLengthArray>
+#include <QList>
 
 typedef void* yyscan_t;
 int xlsxformulalex_init(yyscan_t* ptr_yy_globals);
@@ -94,15 +95,15 @@ public:
         XlsxAST::ExpressionNode *Expression;
         XlsxAST::IdentifierExpression *Identifier;
     };
-    XlsxFormulaParser();
+    XlsxFormulaParser(const QString &formula);
     ~XlsxFormulaParser();
 
-    bool parse(const QString &formula, XlsxMemoryPool *pool);
+    bool parse();
     inline Value &sym(int index);
 
 private:
     int nextToken(yyscan_t scanner);
-    void consumeRule(int ruleno, XlsxMemoryPool *pool);
+    void consumeRule(int ruleno);
 
     enum { DefaultStackSize = 128 };
 
@@ -123,6 +124,9 @@ private:
     };
 
     QSharedDataPointer<Data> d;
+    QString formula;
+    XlsxMemoryPool *pool;
+    QList<QString *> stringList;
 };
 
 inline XlsxFormulaParser::Value &XlsxFormulaParser::sym(int n)
@@ -167,16 +171,19 @@ struct yy_buffer_state;
 yy_buffer_state * xlsxformula_scan_bytes(const char *bytes,int len, yyscan_t yyscanner);
 void xlsxformula_delete_buffer(yy_buffer_state *buffer, yyscan_t yyscanner);
 
-XlsxFormulaParser::XlsxFormulaParser():
-    d(new Data())
+XlsxFormulaParser::XlsxFormulaParser(const QString &formula):
+    d(new Data()), formula(formula), pool(new XlsxMemoryPool)
 {
 }
 
 XlsxFormulaParser::~XlsxFormulaParser()
 {
+    delete pool;
+    qDeleteAll(stringList);
+    stringList.clear();
 }
 
-bool XlsxFormulaParser::parse(const QString &formula, XlsxMemoryPool *pool)
+bool XlsxFormulaParser::parse()
 {
     QByteArray bytes = formula.toUtf8();
 
@@ -214,7 +221,7 @@ bool XlsxFormulaParser::parse(const QString &formula, XlsxMemoryPool *pool)
             int r = - act - 1;
             d->tos -= rhs[r];
             act = d->stateStack[d->tos++];
-            consumeRule(r, pool);
+            consumeRule(r);
             act = d->stateStack[d->tos] = nt_action(act, lhs[r] - TERMINAL_COUNT);
         } else {
             break;
@@ -226,7 +233,7 @@ bool XlsxFormulaParser::parse(const QString &formula, XlsxMemoryPool *pool)
     return false;
 }
 
-void XlsxFormulaParser::consumeRule(int ruleno, XlsxMemoryPool *pool)
+void XlsxFormulaParser::consumeRule(int ruleno)
 {
     switch (ruleno) {
 ./
@@ -240,11 +247,7 @@ Goal: Expression ;
 PrimaryExpression: T_STRING_LITERAL ;
 /.
     case $rule_number:
-    {
-        XlsxAST::Node *node = makeAstNode<XlsxAST::StringLiteral> (pool, *sym(1).sval);
-        delete sym(1).sval;
-        sym(1).Node = node;
-    }
+        sym(1).Node = makeAstNode<XlsxAST::StringLiteral> (pool, sym(1).sval);
         break;
 ./
 
@@ -258,11 +261,14 @@ PrimaryExpression: NameExpression;
 NameExpression: T_IDENTIFIER;
 /.
     case $rule_number:
-    {
-        XlsxAST::Node *node = makeAstNode<XlsxAST::IdentifierExpression> (pool, *(sym(1).sval));
-        delete sym(1).sval;
-        sym(1).Node = node;
-    }
+        sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
+        break;
+./
+
+PrimaryExpression: T_ERROR_CONSTANT;
+/.
+    case $rule_number:
+        sym(1).Node = makeAstNode<XlsxAST::ErrorConstantLiteral> (pool, sym(1).sval);
         break;
 ./
 
@@ -274,10 +280,10 @@ PrimaryExpression: T_LPAREN Expression T_RPAREN;
 ./
 
 PrimaryExpression: CallExpression;
-CallExpression: NameExpression Arguments;
+CallExpression: T_IDENTIFIER Arguments;
 /.
     case $rule_number:
-        sym(1).Node = makeAstNode<XlsxAST::CallExpression> (pool, sym(1).Identifier->name, sym(2).ArgumentList);
+        sym(1).Node = makeAstNode<XlsxAST::CallExpression> (pool, sym(1).sval, sym(2).ArgumentList);
         break;
 ./
 

@@ -40,6 +40,10 @@ E			[Ee][+-]?{D}+
 %{
 char string_buf[1024];
 char *string_buf_ptr;
+#define SAVESTRING(bytes) \
+    sym(1).sval = new QString(QString::fromUtf8(bytes)); \
+    stringList.append(sym(1).sval)
+
 %}
 
 \"             { /* start double-quote */
@@ -49,7 +53,7 @@ char *string_buf_ptr;
 <str>\"        { /* closing double-quote */
                    BEGIN(INITIAL);
                    *string_buf_ptr = '\0';
-                   sym(1).sval = new QString(QString::fromUtf8(string_buf));
+                   SAVESTRING(string_buf);
                    return T_STRING_LITERAL;
                }
 <str>\"\"      { /* 2double-quote means escaped double-quote */
@@ -62,8 +66,13 @@ char *string_buf_ptr;
                }
 
 [a-zA-Z_]([a-zA-Z0-9_])*  {
-                              sym(1).sval = new QString(QString::fromUtf8(yytext));
+                              SAVESTRING(yytext);
                               return T_IDENTIFIER;
+                          }
+
+"#DIV/0!"|"#N/A"|"#NAME?"|"#NULL!"|"#NUM!"|"#REF!"|"#VALUE!"|"#GETTING_DATA" {
+                              SAVESTRING(yytext);
+                              return T_ERROR_CONSTANT;
                           }
 
 {D}+{E}?            { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }

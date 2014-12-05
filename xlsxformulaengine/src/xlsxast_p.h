@@ -62,6 +62,7 @@ public:
 
         Kind_NumericLiteral,
         Kind_StringLiteral,
+        Kind_ErrorConstantLiteral,
         Kind_IdentifierExpression,
         Kind_UnaryMinusExpression,
         Kind_UnaryPlusExpression,
@@ -98,11 +99,11 @@ public:
 class IdentifierExpression: public ExpressionNode
 {
 public:
-    IdentifierExpression(const QString &n):
+    IdentifierExpression(const QString *n):
         name (n) { kind = Kind_IdentifierExpression; }
 
 // attributes
-    QString name;
+    const QString *name;
 };
 
 class NumericLiteral: public ExpressionNode
@@ -118,11 +119,21 @@ public:
 class StringLiteral: public ExpressionNode
 {
 public:
-    StringLiteral(const QString &v):
+    StringLiteral(const QString *v):
         value (v) { kind = Kind_StringLiteral; }
 
 // attributes:
-    QString value;
+    const QString *value;
+};
+
+class ErrorConstantLiteral: public ExpressionNode
+{
+public:
+    ErrorConstantLiteral(const QString *v):
+        value (v) { kind = Kind_ErrorConstantLiteral; }
+
+// attributes:
+    const QString *value;
 };
 
 class UnaryPlusExpression: public ExpressionNode
@@ -230,12 +241,12 @@ public:
 class CallExpression: public ExpressionNode
 {
 public:
-    CallExpression(const QString & name, ArgumentList *a):
+    CallExpression(const QString *name, ArgumentList *a):
         name (name), arguments (a)
         { kind = Kind_CallExpression; }
 
 // attributes
-    QString name;
+    const QString *name;
     ArgumentList *arguments;
 };
 

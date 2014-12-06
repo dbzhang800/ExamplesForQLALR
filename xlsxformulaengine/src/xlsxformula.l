@@ -65,10 +65,9 @@ char *string_buf_ptr;
                        *string_buf_ptr++ = *yptr++;
                }
 
-[a-zA-Z_]([a-zA-Z0-9_])*  {
-                              SAVESTRING(yytext);
-                              return T_IDENTIFIER;
-                          }
+[a-zA-Z_]([a-zA-Z0-9_])*  {SAVESTRING(yytext); return T_IDENTIFIER; }
+[0-9]+":"[0-9]+ {SAVESTRING(yytext); return T_IDENTIFIER;}
+[a-zA-Z]+":"[a-zA-Z]+ {SAVESTRING(yytext); return T_IDENTIFIER;}
 
 "#DIV/0!"|"#N/A"|"#NAME?"|"#NULL!"|"#NUM!"|"#REF!"|"#VALUE!"|"#GETTING_DATA" {
                               SAVESTRING(yytext);

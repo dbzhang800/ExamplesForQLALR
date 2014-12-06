@@ -16,6 +16,7 @@
 #include "xlsxformulaengine.h"
 #include "xlsxcelldata.h"
 #include "xlsxworksheet.h"
+#include "xlsxcellreference.h"
 #include <QtTest>
 
 class FormulaEngineTest : public QObject
@@ -95,7 +96,7 @@ void FormulaEngineTest::testOperator()
     QFETCH(XlsxCellData, result);
 
     XlsxFormulaEngine engine(0);
-    QCOMPARE(engine.evaluate(formula), result);
+    QCOMPARE(engine.evaluate(formula, XlsxCellReference("A1")), result);
 }
 
 void FormulaEngineTest::testCellReference_data()
@@ -106,7 +107,7 @@ void FormulaEngineTest::testCellReference_data()
     QTest::newRow("A1") << "A1" << XlsxCellData(100);
     QTest::newRow("A1A2") << "A1*A1&A2" << XlsxCellData("10000Qt!");
     QTest::newRow("name") << "A1*TEST" << XlsxCellData(700);
-    QTest::newRow("name2") << "A1*TEST2" << XlsxCellData("#NAME?", XlsxCellData::T_Error);
+    QTest::newRow("non-exist name") << "A1*TEST_2" << XlsxCellData("#NAME?", XlsxCellData::T_Error);
 
     QTest::newRow("empty cell 1") << "A3=0" << XlsxCellData(true, XlsxCellData::T_Boolean);
     QTest::newRow("empty cell 2") << "A3=FALSE" << XlsxCellData(true, XlsxCellData::T_Boolean);
@@ -127,7 +128,7 @@ void FormulaEngineTest::testCellReference()
     QFETCH(XlsxCellData, result);
 
     XlsxFormulaEngine engine(&sheet);
-    QCOMPARE(engine.evaluate(formula), result);
+    QCOMPARE(engine.evaluate(formula, XlsxCellReference("D4")), result);
 }
 
 QTEST_APPLESS_MAIN(FormulaEngineTest)

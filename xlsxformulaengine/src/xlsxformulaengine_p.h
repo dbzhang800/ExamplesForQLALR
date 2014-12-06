@@ -17,10 +17,9 @@
 
 #include "xlsxformulaengine.h"
 #include "xlsxmemorypool_p.h"
+#include "xlsxast_p.h"
+#include "xlsxcellreference.h"
 
-namespace XlsxAST {
-    class Node;
-}
 class XlsxWorksheet;
 class XlsxFormulaEnginePrivate
 {
@@ -28,9 +27,10 @@ class XlsxFormulaEnginePrivate
 public:
     XlsxFormulaEnginePrivate(XlsxFormulaEngine *q);
 
-    XlsxCellData interpret(XlsxAST::Node *node, const QString &cellRef);
+    XlsxCellData evalAst(XlsxAST::Node *node);
 
     XlsxWorksheet *sheet;
+    XlsxCellReference cellRef;
     QString errorString;
     XlsxFormulaEngine * q_ptr;
 };

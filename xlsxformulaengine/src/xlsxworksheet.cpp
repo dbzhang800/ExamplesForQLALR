@@ -15,20 +15,22 @@
 
 #include "xlsxworksheet.h"
 #include "xlsxcelldata.h"
+#include "xlsxcellreference.h"
 
 XlsxWorksheet::XlsxWorksheet()
 {
 }
 
-void XlsxWorksheet::addCell(const QString &cellRef, const XlsxCellData &data)
+void XlsxWorksheet::addCell(const XlsxCellReference &cellRef, const XlsxCellData &data)
 {
-    cellTable[cellRef.toUpper()] = data;
+    cellTable[cellRef.row()][cellRef.column()] = data;
 }
 
-XlsxCellData XlsxWorksheet::cellAt(const QString &cellRef) const
+XlsxCellData XlsxWorksheet::cellAt(const XlsxCellReference &cellRef) const
 {
-    if (cellTable.contains(cellRef.toUpper()))
-        return cellTable[cellRef.toUpper()];
+    if (cellTable.contains(cellRef.row()) && cellTable[cellRef.row()].contains(cellRef.column()))
+        return cellTable[cellRef.row()][cellRef.column()];
+
     return XlsxCellData();
 }
 

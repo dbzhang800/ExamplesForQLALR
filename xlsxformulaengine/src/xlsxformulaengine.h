@@ -19,6 +19,7 @@
 #include <QObject>
 class XlsxCellData;
 class XlsxWorksheet;
+class XlsxCellReference;
 class XlsxFormulaEnginePrivate;
 
 class XlsxFormulaEngine : public QObject
@@ -30,7 +31,7 @@ public:
     explicit XlsxFormulaEngine(XlsxWorksheet *sheet, QObject *parent = 0);
     ~XlsxFormulaEngine();
 
-    XlsxCellData evaluate(const QString &formula, const QString &cellRef = QString());
+    XlsxCellData evaluate(const QString &formula, const XlsxCellReference &cell);
 
     bool hasError() const;
     QString errorString() const;

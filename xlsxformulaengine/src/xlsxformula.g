@@ -24,6 +24,8 @@
 -- %token T_FALSE_LITERAL "FALSE"
 %token T_NUMRIC_LITERAL "numric literal"
 %token T_IDENTIFIER "identifier"
+%token T_CELL_A1_REF "$A$1"
+%token T_CELL_R1C1_REF "R[1]C[1]"
 %token T_LPAREN "("
 %token T_RPAREN ")"
 %token T_LBRACKET "["
@@ -257,13 +259,39 @@ PrimaryExpression: T_NUMRIC_LITERAL ;
         sym(1).Node = makeAstNode<XlsxAST::NumericLiteral> (pool, sym(1).dval);
         break;
 ./
-PrimaryExpression: NameExpression;
-NameExpression: T_IDENTIFIER;
+
+IdExpression: T_IDENTIFIER;
 /.
     case $rule_number:
         sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
         break;
 ./
+
+CellReferenceSingle: IdExpression;
+CellReferenceSingle: T_CELL_A1_REF;
+/.
+    case $rule_number:
+        sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
+        break;
+./
+
+CellReferenceSingle: T_CELL_R1C1_REF;
+/.
+    case $rule_number:
+        sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
+        break;
+./
+
+CellReferenceRange: CellReferenceSingle;
+CellReferenceRange: CellReferenceSingle T_COLON CellReferenceSingle;
+/.
+    case $rule_number:
+        sym(1).Node = makeAstNode<XlsxAST::CellReferenceExpression> (pool, sym(1).Identifier, sym(3).Identifier);
+        break;
+./
+
+PrimaryExpression: CellReferenceExpression;
+CellReferenceExpression: CellReferenceRange;
 
 PrimaryExpression: T_ERROR_CONSTANT;
 /.

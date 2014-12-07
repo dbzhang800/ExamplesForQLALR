@@ -32,6 +32,11 @@ public:
     XlsxWorksheet *sheet;
     XlsxCellReference cellRef;
     QString errorString;
+
+private:
+    XlsxCellData getCellDataAt(const XlsxCellReference &cell);
+    XlsxCellData evalIdentifierExpression(XlsxAST::IdentifierExpression *idExp);
+    XlsxCellData evalCellReferenceExpression(XlsxAST::CellReferenceExpression *cellExp);
     XlsxFormulaEngine * q_ptr;
 };
 

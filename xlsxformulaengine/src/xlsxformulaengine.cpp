@@ -91,25 +91,10 @@ XlsxCellData XlsxFormulaEnginePrivate::evalAst(XlsxAST::Node *node)
         return XlsxCellData(text, XlsxCellData::T_Error);
     }
     case XlsxAST::Node::Kind_IdentifierExpression: {
-        //TODO
-        QString text = static_cast<XlsxAST::IdentifierExpression *>(node)->name->toUpper();
-        if (text == "TRUE") {
-            return XlsxCellData(true, XlsxCellData::T_Boolean);
-        } else if (text == "FALSE") {
-            return XlsxCellData(false, XlsxCellData::T_Boolean);
-        } else {
-            XlsxCellReference cellRef(text);
-            if (!cellRef.isNull()) {
-                if (cellRef.type() == XlsxCellReference::SingleCellType)
-                    return sheet->cellAt(cellRef);
-            } else {
-                if (sheet->hasDefinedName(text)) {
-                    XlsxFormulaEngine engine(sheet);
-                    return engine.evaluate(sheet->getDefinedNameFormula(text), XlsxCellReference());
-                }
-                return XlsxCellData("#NAME?", XlsxCellData::T_Error);
-            }
-        }
+        return evalIdentifierExpression(static_cast<XlsxAST::IdentifierExpression *>(node));
+    }
+    case XlsxAST::Node::Kind_CellReferenceExpression: {
+        return evalCellReferenceExpression(static_cast<XlsxAST::CellReferenceExpression *>(node));
     }
     case XlsxAST::Node::Kind_UnaryPlusExpression: {
         return evalAst(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression);
@@ -218,4 +203,61 @@ XlsxCellData XlsxFormulaEnginePrivate::evalAst(XlsxAST::Node *node)
     }
 
     return XlsxCellData();
+}
+
+/*
+ * Implicit intersection should be performed on except for those that allow a range.
+ */
+XlsxCellData XlsxFormulaEnginePrivate::getCellDataAt(const XlsxCellReference &cell)
+{
+    if (cell.type() == XlsxCellReference::SingleCellType)
+        return sheet->cellAt(cell);
+
+    if (cell.type() == XlsxCellReference::RowsType && cell.rowCount() == 1)
+        return sheet->cellAt(XlsxCellReference(cell.row(), this->cellRef.column()));
+
+    if (cell.type() == XlsxCellReference::ColumnsType && cell.columnCount() == 1)
+        return sheet->cellAt(XlsxCellReference(this->cellRef.row(), cell.column()));
+
+    if (cell.type() == XlsxCellReference::CellRangeType) {
+        if (cell.columnCount() == 1 && this->cellRef.row() >= cell.firstRow()
+                && this->cellRef.row() <= cell.lastRow()) {
+            return sheet->cellAt(XlsxCellReference(this->cellRef.row(), cell.column()));
+        }
+        if (cell.rowCount() == 1 && this->cellRef.column() >= cell.firstColumn()
+                && this->cellRef.column() <= cell.lastColumn()) {
+            return sheet->cellAt(XlsxCellReference(cell.row(), this->cellRef.column()));
+        }
+    }
+
+    return XlsxCellData("#VALUE!", XlsxCellData::T_Error);
+}
+
+XlsxCellData XlsxFormulaEnginePrivate::evalIdentifierExpression(XlsxAST::IdentifierExpression *idExp)
+{
+    QString text = idExp->name->toUpper();
+    if (text == "TRUE")
+        return XlsxCellData(true, XlsxCellData::T_Boolean);
+    if (text == "FALSE")
+        return XlsxCellData(false, XlsxCellData::T_Boolean);
+
+    //Try to find whether it's a cellReference
+    XlsxCellReference cellRef(text);
+    if (!cellRef.isNull())
+        return getCellDataAt(cellRef);
+
+    //Try to find whether it's a NAME
+    if (sheet->hasDefinedName(text)) {
+        XlsxFormulaEngine engine(sheet);
+        return engine.evaluate(sheet->getDefinedNameFormula(text), XlsxCellReference());
+    }
+
+    //Invalid NAME
+    return XlsxCellData("#NAME?", XlsxCellData::T_Error);
+}
+
+XlsxCellData XlsxFormulaEnginePrivate::evalCellReferenceExpression(XlsxAST::CellReferenceExpression *cellExp)
+{
+    return getCellDataAt(XlsxCellReference(QString("%1:%2").arg(cellExp->cell1->name->toUpper())
+                                           .arg(cellExp->cell2->name->toUpper())));
 }

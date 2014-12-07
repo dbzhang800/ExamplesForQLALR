@@ -64,6 +64,7 @@ public:
         Kind_StringLiteral,
         Kind_ErrorConstantLiteral,
         Kind_IdentifierExpression,
+        Kind_CellReferenceExpression,
         Kind_UnaryMinusExpression,
         Kind_UnaryPlusExpression,
         Kind_UnaryPercentExpression,
@@ -104,6 +105,18 @@ public:
 
 // attributes
     const QString *name;
+};
+
+class CellReferenceExpression: public ExpressionNode
+{
+public:
+    CellReferenceExpression(const IdentifierExpression *cell1, const IdentifierExpression *cell2=0):
+        cell1(cell1), cell2(cell2)
+    { kind = Kind_CellReferenceExpression; }
+
+// attributes
+    const IdentifierExpression *cell1;
+    const IdentifierExpression *cell2;
 };
 
 class NumericLiteral: public ExpressionNode

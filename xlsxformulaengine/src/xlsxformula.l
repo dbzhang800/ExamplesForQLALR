@@ -66,8 +66,14 @@ char *string_buf_ptr;
                }
 
 [a-zA-Z_]([a-zA-Z0-9_])*  {SAVESTRING(yytext); return T_IDENTIFIER; }
-[0-9]+":"[0-9]+ {SAVESTRING(yytext); return T_IDENTIFIER;}
-[a-zA-Z]+":"[a-zA-Z]+ {SAVESTRING(yytext); return T_IDENTIFIER;}
+\$?[a-zA-Z]+\$?[0-9]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
+\$?[0-9]+":"\$?[0-9]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
+\$?[a-zA-Z]+":"\$?[a-zA-Z]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
+R"["[0-9]+"]"  {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
+C"["[0-9]+"]"  {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
+R"["[0-9]+"]"C"["[0-9]+"]" {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
+R([0-9]+)?C"["[0-9]+"]" {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
+R"["[0-9]+"]"C([0-9]+)? {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
 
 "#DIV/0!"|"#N/A"|"#NAME?"|"#NULL!"|"#NUM!"|"#REF!"|"#VALUE!"|"#GETTING_DATA" {
                               SAVESTRING(yytext);

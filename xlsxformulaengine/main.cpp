@@ -32,6 +32,8 @@ private Q_SLOTS:
 
     void testCellReference_data();
     void testCellReference();
+
+    void testImplicitIntersection();
 };
 
 FormulaEngineTest::FormulaEngineTest()
@@ -44,6 +46,10 @@ void FormulaEngineTest::testOperator_data()
     QTest::addColumn<XlsxCellData>("result");
 
     //Simple
+    QTest::newRow("number1") << "-1.222E+2" << XlsxCellData(-122.2);
+    QTest::newRow("number2") << "1.E+2" << XlsxCellData(100);
+    QTest::newRow("number2") << "100e-2" << XlsxCellData(1);
+
     QTest::newRow("+") << "1+2+3++2" << XlsxCellData(8);
     QTest::newRow("-") << "1-3----1" << XlsxCellData(-1);
     QTest::newRow("*") << "1+2*3" << XlsxCellData(7);
@@ -106,6 +112,10 @@ void FormulaEngineTest::testCellReference_data()
 
     QTest::newRow("A1") << "A1" << XlsxCellData(100);
     QTest::newRow("A1A2") << "A1*A1&A2" << XlsxCellData("10000Qt!");
+    QTest::newRow("$A1A2") << "$A1*$A1&A2" << XlsxCellData("10000Qt!");
+    QTest::newRow("A$1A2") << "A$1*A$1&A2" << XlsxCellData("10000Qt!");
+    QTest::newRow("$A$1$A$2") << "$A$1*$A$1&$A$2" << XlsxCellData("10000Qt!");
+
     QTest::newRow("name") << "A1*TEST" << XlsxCellData(700);
     QTest::newRow("non-exist name") << "A1*TEST_2" << XlsxCellData("#NAME?", XlsxCellData::T_Error);
 
@@ -129,6 +139,28 @@ void FormulaEngineTest::testCellReference()
 
     XlsxFormulaEngine engine(&sheet);
     QCOMPARE(engine.evaluate(formula, XlsxCellReference("D4")), result);
+}
+
+void FormulaEngineTest::testImplicitIntersection()
+{
+    XlsxWorksheet sheet;
+    sheet.addCell("A1", XlsxCellData("1,1"));
+    sheet.addCell("A2", XlsxCellData("2,1"));
+    sheet.addCell("A3", XlsxCellData("3,1"));
+    sheet.addCell("A4", XlsxCellData("4,1"));
+    sheet.addCell("B1", XlsxCellData("1,2"));
+    sheet.addCell("C1", XlsxCellData("1,3"));
+    sheet.addCell("D1", XlsxCellData("1,4"));
+    sheet.addCell("E1", XlsxCellData("1,5"));
+
+    XlsxFormulaEngine engine(&sheet);
+    QCOMPARE(engine.evaluate("1:1", XlsxCellReference("D4")), XlsxCellData("1,4"));
+    QCOMPARE(engine.evaluate("$1:1", XlsxCellReference("D4")), XlsxCellData("1,4"));
+    QCOMPARE(engine.evaluate("A:A", XlsxCellReference("D4")), XlsxCellData("4,1"));
+    QCOMPARE(engine.evaluate("1:2", XlsxCellReference("D4")), XlsxCellData("#VALUE!", XlsxCellData::T_Error));
+    QCOMPARE(engine.evaluate("A1:A4", XlsxCellReference("D4")), XlsxCellData("4,1"));
+    QCOMPARE(engine.evaluate("$A$1:A4", XlsxCellReference("D4")), XlsxCellData("4,1"));
+    QCOMPARE(engine.evaluate("A1:B4", XlsxCellReference("D4")), XlsxCellData("#VALUE!", XlsxCellData::T_Error));
 }
 
 QTEST_APPLESS_MAIN(FormulaEngineTest)

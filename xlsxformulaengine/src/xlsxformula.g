@@ -36,7 +36,7 @@
 %token T_SPACE "SPACE_20"
 %token T_SEMICOLON ";"
 %token T_COMMA ","
-%token T_XOR "^"
+%token T_CARET "^"
 %token T_PLUS "+"
 %token T_MINUS "-"
 %token T_DIVIDE "/"
@@ -366,7 +366,7 @@ UnaryExpression: UnaryExpression T_PERCENT;
 ./
 
 ExponentialExpression : UnaryExpression;
-ExponentialExpression : ExponentialExpression T_XOR UnaryExpression;
+ExponentialExpression : ExponentialExpression T_CARET UnaryExpression;
 /.
     case $rule_number:
         sym(1).Node = makeAstNode<XlsxAST::BinaryArithmeticExpression> (pool, sym(1).Expression, XlsxAST::Exp, sym(3).Expression);

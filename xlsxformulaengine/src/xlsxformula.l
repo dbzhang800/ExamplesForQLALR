@@ -99,7 +99,7 @@ R"["[0-9]+"]"C([0-9]+)? {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
 [ ]*"-"[ ]*         { return T_MINUS; }
 [ ]*"/"[ ]*         { return T_DIVIDE; }
 [ ]*"*"[ ]*         { return T_STAR; }
-[ ]*"^"[ ]*         { return T_XOR; }
+[ ]*"^"[ ]*         { return T_CARET; }
 [ ]*","[ ]*         { return T_COMMA; }
 [ ]*"%"[ ]*         { return T_PERCENT; }
 [ ]*"&"[ ]*         { return T_AND; }

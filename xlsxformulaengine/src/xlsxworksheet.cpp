@@ -17,8 +17,8 @@
 #include "xlsxcelldata.h"
 #include "xlsxcellreference.h"
 
-XlsxWorksheet::XlsxWorksheet(XlsxWorkbook *book)
-    :book(book)
+XlsxWorksheet::XlsxWorksheet(const QString &name, XlsxWorkbook *book)
+    :book(book), name(name)
 {
 }
 

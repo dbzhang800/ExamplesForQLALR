@@ -29,10 +29,21 @@
 %}
 
 D			[0-9]
+C           [a-zA-Z]
 L			[a-zA-Z_]
 H			[a-fA-F0-9]
 E			[Ee][+-]?{D}+
-SHEET_NAME_CHAR   [^:;%&=<>\[\]\'\?\^\+\-\*\/]
+
+SHEET_NAME_CHAR   [^:;%&=<>\[\]\'\?\^\+\-\*\/\\]
+SHEET_NAME_NORMAL  {SHEET_NAME_CHAR}+(":"{SHEET_NAME_CHAR}+)?
+SHEET_NAME_CHAR_S [^:\[\]\'\?\*\/\\]
+SHEET_NAME_SPECIAL "'"{SHEET_NAME_CHAR_S}+(":"{SHEET_NAME_CHAR_S}+)?"'"
+SHEET_NAME  {SHEET_NAME_NORMAL}|{SHEET_NAME_SPECIAL}
+
+A1_CELL_REF \$?{C}+\$?{D}+|\$?{D}+":"\$?{D}+|\$?{C}+":"\$?{C}+
+R1C1_R   R|R{D}+|R\[{D}+\]
+R1C1_C   C|C{D}+|C\[{D}+\]
+R1C1_CELL_REF {R1C1_R}|{R1C1_C}|{R1C1_R}{R1C1_C}
 
 %x str
 
@@ -71,20 +82,17 @@ char *string_buf_ptr;
                     return T_ERROR_CONSTANT;
                }
 
-[a-zA-Z_]([a-zA-Z0-9_])*  {SAVESTRING(yytext); return T_IDENTIFIER; }
+[a-zA-Z_]([a-zA-Z0-9_])*  {SAVESTRING(yytext); return T_NAME_OR_CELL_REF; }
 
-\$?[a-zA-Z]+\$?[0-9]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
-\$?[0-9]+":"\$?[0-9]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
-\$?[a-zA-Z]+":"\$?[a-zA-Z]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
-\$?[a-zA-Z]+\$?[0-9]+":"\$?[a-zA-Z]+\$?[0-9]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
+({SHEET_NAME}"!")?{A1_CELL_REF}(":"{A1_CELL_REF})? {
+                    SAVESTRING(yytext);
+                    return T_NAME_OR_CELL_REF;
+                }
 
-R"["[0-9]+"]"  {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
-C"["[0-9]+"]"  {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
-R"["[0-9]+"]"C"["[0-9]+"]" {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
-R([0-9]+)?C"["[0-9]+"]" {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
-R"["[0-9]+"]"C([0-9]+)? {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
-
-{SHEET_NAME_CHAR}+(":"{SHEET_NAME_CHAR}+)?"!" {SAVESTRING(yytext); return T_SHEET_NAME; }
+({SHEET_NAME}"!")?{R1C1_CELL_REF}(":"{R1C1_CELL_REF})? {
+                    SAVESTRING(yytext);
+                    return T_NAME_OR_CELL_REF;
+                }
 
 {D}+{E}?            { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }
 {D}*"."{D}+({E})?   { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }

@@ -31,9 +31,9 @@ XlsxWorkbook::~XlsxWorkbook()
 
 XlsxWorksheet *XlsxWorkbook::addSheet(const QString &sheetName)
 {
-    XlsxWorksheet *s = new XlsxWorksheet;
+    XlsxWorksheet *s = new XlsxWorksheet(sheetName);
     sheets.append(s);
-    sheetNames.append(sheetName);
+    sheetNames.append(sheetName.toUpper());
     currentSheetIdx = sheetNames.length() - 1;
 
     return s;
@@ -41,23 +41,15 @@ XlsxWorksheet *XlsxWorkbook::addSheet(const QString &sheetName)
 
 XlsxWorksheet *XlsxWorkbook::sheet(const QString &sheetName) const
 {
-    int idx = sheetNames.indexOf(sheetName);
+    int idx = sheetNames.indexOf(sheetName.toUpper());
     if (idx == -1)
         return 0;
     return sheets[idx];
 }
 
-QString XlsxWorkbook::sheetName(XlsxWorksheet *sheet) const
-{
-    int idx = sheets.indexOf(sheet);
-    if (idx == -1)
-        return QString();
-    return sheetNames[idx];
-}
-
 void XlsxWorkbook::setCurrentSheet(const QString &sheetName)
 {
-    int idx = sheetNames.indexOf(sheetName);
+    int idx = sheetNames.indexOf(sheetName.toUpper());
     if (idx != -1)
         currentSheetIdx = idx;
 }
@@ -93,9 +85,4 @@ QString XlsxWorkbook::getDefinedNameFormula(const QString &name, const QString &
     if (d.scope == scope || d.scope.isEmpty())
         return d.formula;
     return QString();
-}
-
-QString XlsxWorkbook::getDefinedNameFormula(const QString &name, XlsxWorksheet *scope) const
-{
-    return getDefinedNameFormula(name, sheetName(scope));
 }

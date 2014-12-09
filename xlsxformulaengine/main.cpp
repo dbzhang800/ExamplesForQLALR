@@ -28,13 +28,18 @@ public:
     FormulaEngineTest();
 
 private Q_SLOTS:
+
+    //test operators which are independent of any sheet
     void testOperator_data();
     void testOperator();
 
-    void testCellReference_data();
-    void testCellReference();
+    //cell reference in one sheet.
+    void testSimpleCellReference_data();
+    void testSimpleCellReference();
 
     void testImplicitIntersection();
+
+    void testCrossSheetsCellReference();
 };
 
 FormulaEngineTest::FormulaEngineTest()
@@ -106,7 +111,7 @@ void FormulaEngineTest::testOperator()
     QCOMPARE(engine.evaluate(formula, XlsxCellReference("A1")), result);
 }
 
-void FormulaEngineTest::testCellReference_data()
+void FormulaEngineTest::testSimpleCellReference_data()
 {
     QTest::addColumn<QString>("formula");
     QTest::addColumn<XlsxCellData>("result");
@@ -128,7 +133,7 @@ void FormulaEngineTest::testCellReference_data()
     QTest::newRow("empry cell 6") << "A3&\"Qt\"" << XlsxCellData("Qt");
 }
 
-void FormulaEngineTest::testCellReference()
+void FormulaEngineTest::testSimpleCellReference()
 {
     XlsxWorkbook book;
     XlsxWorksheet *sheet = book.addSheet("Sheet1");
@@ -165,6 +170,34 @@ void FormulaEngineTest::testImplicitIntersection()
     QCOMPARE(engine.evaluate("A1:A4", XlsxCellReference("D4")), XlsxCellData("4,1"));
     QCOMPARE(engine.evaluate("$A$1:A4", XlsxCellReference("D4")), XlsxCellData("4,1"));
     QCOMPARE(engine.evaluate("A1:B4", XlsxCellReference("D4")), XlsxCellData("#VALUE!", XlsxCellData::T_Error));
+}
+
+void FormulaEngineTest::testCrossSheetsCellReference()
+{
+    XlsxWorkbook book;
+    XlsxWorksheet *sheet1 = book.addSheet("Sheet1");
+    sheet1->addCell("A1", XlsxCellData("Sheet1 1,1"));
+    sheet1->addCell("A2", XlsxCellData("Sheet1 2,1"));
+
+    XlsxWorksheet *sheet2 = book.addSheet("Sheet2");
+    sheet2->addCell("B1", XlsxCellData(10));
+    sheet2->addCell("B2", XlsxCellData(20));
+
+    XlsxWorksheet *sheet3 = book.addSheet("#Sheet+-!!!!");
+    sheet3->addCell("C1", XlsxCellData("Valid Sheet Name"));
+
+    XlsxFormulaEngine engine(&book);
+    book.setCurrentSheet("Sheet1");
+    QCOMPARE(engine.evaluate("Sheet2!B1", XlsxCellReference("D4")), XlsxCellData(10));
+    QCOMPARE(engine.evaluate("Sheet2!B1+Sheet2!B2", XlsxCellReference("D4")), XlsxCellData(30));
+    QCOMPARE(engine.evaluate("A1 &Sheet2!B2", XlsxCellReference("D4")), XlsxCellData("Sheet1 1,120"));
+    QCOMPARE(engine.evaluate("Sheet1!A1 &Sheet2!B2", XlsxCellReference("D4")), XlsxCellData("Sheet1 1,120"));
+
+    book.setCurrentSheet("Sheet2");
+    QCOMPARE(engine.evaluate("Sheet1!A1", XlsxCellReference("D4")), XlsxCellData("Sheet1 1,1"));
+    QCOMPARE(engine.evaluate("A1&Sheet1!A1", XlsxCellReference("D4")),  XlsxCellData("Sheet1 1,1"));
+    QCOMPARE(engine.evaluate("A1", XlsxCellReference("Sheet1!D4")),  XlsxCellData("Sheet1 1,1"));
+    QCOMPARE(engine.evaluate("\'#Sheet+-!!!!\'!C1", XlsxCellReference("D4")),  XlsxCellData("Valid Sheet Name"));
 }
 
 QTEST_APPLESS_MAIN(FormulaEngineTest)

@@ -30,8 +30,9 @@ public:
     XlsxCellReference();
     XlsxCellReference(int row, int col);
     XlsxCellReference(int firstRow, int firstCol, int lastRow, int lastCol, Type type=CellRangeType);
-    XlsxCellReference(const QString &cell);
-    XlsxCellReference(const char *cell);
+    XlsxCellReference(const QString &cell_A1);
+    XlsxCellReference(const char *cell_A1);
+    XlsxCellReference(const QString &cell_R1C1, const XlsxCellReference &baseCell);
     ~XlsxCellReference();
 
     QString toString() const;
@@ -58,7 +59,8 @@ public:
     bool operator !=(const XlsxCellReference &other) const;
 
 private:
-    void init(const QString &cell);
+    void initFromA1(const QString &cell);
+    void initFromR1C1(const QString &cell, const XlsxCellReference &baseCell);
     int m_row1;
     int m_col1;
     int m_row2;

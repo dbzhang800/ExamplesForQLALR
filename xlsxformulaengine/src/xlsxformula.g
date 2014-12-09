@@ -20,13 +20,8 @@
 %token T_STRING_LITERAL "string literal"
 
 %token T_ERROR_CONSTANT "#DIV/0! etc."
--- %token T_TRUE_LITERAL "TRUE"
--- %token T_FALSE_LITERAL "FALSE"
 %token T_NUMRIC_LITERAL "numric literal"
-%token T_IDENTIFIER "identifier"
-%token T_CELL_A1_REF "$A$1"
-%token T_CELL_R1C1_REF "R[1]C[1]"
-%token T_SHEET_NAME
+%token T_NAME_OR_CELL_REF "name or cellreference"
 %token T_LPAREN "("
 %token T_RPAREN ")"
 %token T_LBRACKET "["
@@ -262,21 +257,7 @@ PrimaryExpression: T_NUMRIC_LITERAL ;
 ./
 
 PrimaryExpression: NameOrCellReference;
-NameOrCellReference: T_IDENTIFIER;
-/.
-    case $rule_number:
-        sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
-        break;
-./
-NameOrCellReference: T_CELL_A1_REF;
-/.
-    case $rule_number:
-        qDebug()<<*sym(1).sval;
-        sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
-        break;
-./
-
-NameOrCellReference: T_CELL_R1C1_REF;
+NameOrCellReference: T_NAME_OR_CELL_REF;
 /.
     case $rule_number:
         sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
@@ -298,7 +279,7 @@ PrimaryExpression: T_LPAREN Expression T_RPAREN;
 ./
 
 PrimaryExpression: CallExpression;
-CallExpression: T_IDENTIFIER Arguments;
+CallExpression: T_NAME_OR_CELL_REF Arguments;
 /.
     case $rule_number:
         sym(1).Node = makeAstNode<XlsxAST::CallExpression> (pool, sym(1).sval, sym(2).ArgumentList);

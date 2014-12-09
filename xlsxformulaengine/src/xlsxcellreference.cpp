@@ -53,6 +53,13 @@ int col_from_name(const QString &col_str)
 
     return col;
 }
+
+QString getEscapedSheetName(const QString &name)
+{
+    if (name.contains(QRegularExpression("[\\+\\-%&=<>]#!")))
+        return QStringLiteral("\'%1\'").arg(name);
+    return name;
+}
 } //namespace
 
 /*!
@@ -104,7 +111,7 @@ XlsxCellReference::XlsxCellReference(const QString &cell)
     , m_isRow1Abs(false), m_isCol1Abs(false), m_isRow2Abs(false), m_isCol2Abs(false)
     , m_type(SingleCellType)
 {
-    init(cell);
+    initFromA1(cell);
 }
 
 /*!
@@ -116,13 +123,28 @@ XlsxCellReference::XlsxCellReference(const char *cell)
     , m_isRow1Abs(false), m_isCol1Abs(false), m_isRow2Abs(false), m_isCol2Abs(false)
     , m_type(SingleCellType)
 {
-    init(QString::fromUtf8(cell));
+    initFromA1(QString::fromUtf8(cell));
 }
 
-void XlsxCellReference::init(const QString &cell_str)
+XlsxCellReference::XlsxCellReference(const QString &cell_R1C1, const XlsxCellReference &baseCell)
+    : m_row1(-1), m_col1(-1), m_row2(-2), m_col2(-2)
+    , m_isRow1Abs(false), m_isCol1Abs(false), m_isRow2Abs(false), m_isCol2Abs(false)
+    , m_type(SingleCellType)
 {
+    initFromR1C1(cell_R1C1, baseCell);
+}
+
+void XlsxCellReference::initFromA1(const QString &cell_str)
+{
+    int idx = cell_str.lastIndexOf(QLatin1Char('!'));
+    if (idx != -1) {
+        m_sheetName = cell_str.left(idx);
+        if (m_sheetName.startsWith(QLatin1Char('\'')))
+            m_sheetName = m_sheetName.mid(1, m_sheetName.size()-2);
+    }
+
     QRegularExpression pattern_A1(QStringLiteral("^(\\$?)([A-Z]{1,3})(\\$?)(\\d+)$"));
-    QRegularExpressionMatch match = pattern_A1.match(cell_str);
+    QRegularExpressionMatch match = pattern_A1.match(cell_str.mid(idx+1));
     if (match.hasMatch()) {
         m_type = SingleCellType;
         m_isCol1Abs = !match.captured(1).isEmpty();
@@ -133,7 +155,7 @@ void XlsxCellReference::init(const QString &cell_str)
     }
 
     QRegularExpression pattern_A1A1(QStringLiteral("^(\\$?)([A-Z]{1,3})(\\$?)(\\d+):(\\$?)([A-Z]{1,3})(\\$?)(\\d+)$"));
-    match = pattern_A1A1.match(cell_str);
+    match = pattern_A1A1.match(cell_str.mid(idx+1));
     if (match.hasMatch()) {
         m_type = CellRangeType;
         m_isCol1Abs = !match.captured(1).isEmpty();
@@ -148,7 +170,7 @@ void XlsxCellReference::init(const QString &cell_str)
     }
 
     QRegularExpression pattern_AA(QStringLiteral("^(\\$?)([A-Z]{1,3}):(\\$?)([A-Z]{1,3})$"));
-    match = pattern_AA.match(cell_str);
+    match = pattern_AA.match(cell_str.mid(idx+1));
     if (match.hasMatch()) {
         m_type = ColumnsType;
         m_isCol1Abs = !match.captured(1).isEmpty();
@@ -159,7 +181,7 @@ void XlsxCellReference::init(const QString &cell_str)
     }
 
     QRegularExpression pattern_11(QStringLiteral("^(\\$?)(\\d+):(\\$?)(\\d+)$"));
-    match = pattern_11.match(cell_str);
+    match = pattern_11.match(cell_str.mid(idx+1));
     if (match.hasMatch()) {
         m_type = RowsType;
         m_isRow1Abs = !match.captured(1).isEmpty();
@@ -169,6 +191,34 @@ void XlsxCellReference::init(const QString &cell_str)
         return;
     }
 
+    //Invalid string pattern
+}
+
+void XlsxCellReference::initFromR1C1(const QString &cell_str, const XlsxCellReference &baseCell)
+{
+    int idx = cell_str.lastIndexOf(QLatin1Char('!'));
+    if (idx != -1) {
+        m_sheetName = cell_str.left(idx);
+        if (m_sheetName.startsWith(QLatin1Char('\'')))
+            m_sheetName = m_sheetName.mid(1, m_sheetName.size()-2);
+    }
+
+    QRegularExpression pattern_R1C1(QStringLiteral("^R(\\[?)(\\d*)(\\]?)C(\\[?)(\\d*)(\\]?)$"));
+    QRegularExpressionMatch match = pattern_R1C1.match(cell_str.mid(idx+1));
+    if (match.hasMatch()) {
+        m_type = SingleCellType;
+        m_isCol1Abs = match.captured(1).isEmpty() && !match.captured(2).isEmpty();
+        m_col1 = match.captured(2).toInt();
+        if (!m_isCol1Abs)
+            m_col1 += baseCell.m_col1;
+        m_isRow1Abs = match.captured(4).isEmpty() && !match.captured(5).isEmpty();
+        m_row1 = match.captured(5).toInt();
+        if (!m_isRow1Abs)
+            m_row1 += baseCell.m_row1;
+        return;
+    }
+
+    //TODO
     //Invalid string pattern
 }
 
@@ -198,6 +248,11 @@ QString XlsxCellReference::toString(bool isRow1Abs, bool isCol1Abs, bool isRow2A
     if (!isNull())
         return QString();
     QStringList items;
+    //sheetName
+    if (!m_sheetName.isEmpty()) {
+        items.append(getEscapedSheetName(m_sheetName));
+        items.append(QStringLiteral("!"));
+    }
     //col1
     if (m_type != RowsType) {
         if (isCol1Abs)
@@ -236,6 +291,11 @@ QString XlsxCellReference::toR1C1String(const XlsxCellReference &baseCell) const
         return QString();
 
     QStringList items;
+    //sheetName
+    if (!m_sheetName.isEmpty()) {
+        items.append(getEscapedSheetName(m_sheetName));
+        items.append(QStringLiteral("!"));
+    }
     //row1
     if (m_type != ColumnsType) {
         if (m_isRow1Abs)
@@ -286,8 +346,7 @@ bool XlsxCellReference::isNull() const
 
 XlsxCellReference XlsxCellReference::fromR1C1String(const QString &cell, const XlsxCellReference &baseCell)
 {
-    //Todo
-    return XlsxCellReference();
+    return XlsxCellReference(cell, baseCell);
 }
 
 XlsxCellReference XlsxCellReference::fromRows(int firstRow, int lastRow)

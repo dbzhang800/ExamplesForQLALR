@@ -32,7 +32,6 @@ public:
 
     XlsxWorksheet *addSheet(const QString &sheetName);
     XlsxWorksheet *sheet(const QString &sheetName) const;
-    QString sheetName(XlsxWorksheet *sheet) const;
     void setCurrentSheet(const QString &sheetName);
     XlsxWorksheet *currentSheet() const;
 

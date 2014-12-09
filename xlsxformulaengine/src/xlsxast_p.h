@@ -99,13 +99,12 @@ public:
 class IdentifierExpression: public ExpressionNode
 {
 public:
-    IdentifierExpression(const QString *name, const QString *parentName=0):
-        name(name), parentName(parentName)
+    IdentifierExpression(const QString *name):
+        name(name)
     { kind = Kind_IdentifierExpression; }
 
 // attributes
     const QString *name;
-    const QString *parentName;//SheetName for cellRef or WorkName for name
 };
 
 class NumericLiteral: public ExpressionNode

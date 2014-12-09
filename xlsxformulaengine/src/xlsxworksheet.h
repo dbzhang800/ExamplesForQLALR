@@ -26,7 +26,8 @@ class XlsxWorkbook;
 class XlsxWorksheet
 {
 public:
-    XlsxWorksheet(XlsxWorkbook *book=0);
+    XlsxWorksheet(const QString &name, XlsxWorkbook *book=0);
+    QString sheetName() const {return name;}
 
     void addCell(const XlsxCellReference &cellRef, const XlsxCellData &data);
     XlsxCellData cellAt(const XlsxCellReference &cellRef) const;
@@ -34,6 +35,7 @@ public:
 private:
     QMap<int, QMap<int, XlsxCellData> > cellTable;
     XlsxWorkbook *book;
+    QString name;
 };
 
 #endif // XLSXWORKSHEET_H

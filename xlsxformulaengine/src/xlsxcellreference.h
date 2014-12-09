@@ -52,6 +52,7 @@ public:
     inline int rowCount() const { return m_row2 - m_row1 + 1; }
     inline int columnCount() const { return m_col2 - m_col1 + 1; }
     inline Type type() const {return m_type; }
+    inline QString sheetName() const {return m_sheetName; }
 
     bool operator ==(const XlsxCellReference &other) const;
     bool operator !=(const XlsxCellReference &other) const;
@@ -66,6 +67,7 @@ private:
     bool m_isCol1Abs;
     bool m_isRow2Abs;
     bool m_isCol2Abs;
+    QString m_sheetName;
     Type m_type;
 };
 

@@ -17,7 +17,8 @@
 #include "xlsxcelldata.h"
 #include "xlsxcellreference.h"
 
-XlsxWorksheet::XlsxWorksheet()
+XlsxWorksheet::XlsxWorksheet(XlsxWorkbook *book)
+    :book(book)
 {
 }
 
@@ -32,21 +33,4 @@ XlsxCellData XlsxWorksheet::cellAt(const XlsxCellReference &cellRef) const
         return cellTable[cellRef.row()][cellRef.column()];
 
     return XlsxCellData();
-}
-
-void XlsxWorksheet::defineName(const QString &name, const QString &formula)
-{
-    definedNames[name.toUpper()] = formula;
-}
-
-bool XlsxWorksheet::hasDefinedName(const QString &name) const
-{
-    return definedNames.contains(name.toUpper());
-}
-
-QString XlsxWorksheet::getDefinedNameFormula(const QString &name) const
-{
-    if (definedNames.contains(name.toUpper()))
-        return definedNames[name.toUpper()];
-    return QString();
 }

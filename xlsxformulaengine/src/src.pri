@@ -13,11 +13,13 @@ HEADERS += \
     $$PWD/xlsxmemorypool_p.h \
     $$PWD/xlsxcelldata.h \
     $$PWD/xlsxworksheet.h \
-    $$PWD/xlsxcellreference.h
+    $$PWD/xlsxcellreference.h \
+    $$PWD/xlsxworkbook.h
 
 SOURCES += \
     $$PWD/xlsxformulaengine.cpp \
     $$PWD/xlsxast.cpp \
     $$PWD/xlsxcelldata.cpp \
     $$PWD/xlsxworksheet.cpp \
-    $$PWD/xlsxcellreference.cpp
+    $$PWD/xlsxcellreference.cpp \
+    $$PWD/xlsxworkbook.cpp

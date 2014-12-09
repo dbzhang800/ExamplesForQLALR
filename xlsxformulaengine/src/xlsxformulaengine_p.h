@@ -21,6 +21,7 @@
 #include "xlsxcellreference.h"
 
 class XlsxWorksheet;
+class XlsxWorkbook;
 class XlsxFormulaEnginePrivate
 {
     Q_DECLARE_PUBLIC(XlsxFormulaEngine)
@@ -29,6 +30,7 @@ public:
 
     XlsxCellData evalAst(XlsxAST::Node *node);
 
+    XlsxWorkbook *book;
     XlsxWorksheet *sheet;
     XlsxCellReference cellRef;
     QString errorString;

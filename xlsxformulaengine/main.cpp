@@ -16,6 +16,7 @@
 #include "xlsxformulaengine.h"
 #include "xlsxcelldata.h"
 #include "xlsxworksheet.h"
+#include "xlsxworkbook.h"
 #include "xlsxcellreference.h"
 #include <QtTest>
 
@@ -129,31 +130,34 @@ void FormulaEngineTest::testCellReference_data()
 
 void FormulaEngineTest::testCellReference()
 {
-    XlsxWorksheet sheet;
-    sheet.addCell("A1", XlsxCellData(100));
-    sheet.addCell("A2", XlsxCellData("Qt!"));
-    sheet.defineName("TEST", "1+2*3");
+    XlsxWorkbook book;
+    XlsxWorksheet *sheet = book.addSheet("Sheet1");
+    sheet->addCell("A1", XlsxCellData(100));
+    sheet->addCell("A2", XlsxCellData("Qt!"));
+
+    book.defineName("TEST", "1+2*3");
 
     QFETCH(QString, formula);
     QFETCH(XlsxCellData, result);
 
-    XlsxFormulaEngine engine(&sheet);
+    XlsxFormulaEngine engine(&book);
     QCOMPARE(engine.evaluate(formula, XlsxCellReference("D4")), result);
 }
 
 void FormulaEngineTest::testImplicitIntersection()
 {
-    XlsxWorksheet sheet;
-    sheet.addCell("A1", XlsxCellData("1,1"));
-    sheet.addCell("A2", XlsxCellData("2,1"));
-    sheet.addCell("A3", XlsxCellData("3,1"));
-    sheet.addCell("A4", XlsxCellData("4,1"));
-    sheet.addCell("B1", XlsxCellData("1,2"));
-    sheet.addCell("C1", XlsxCellData("1,3"));
-    sheet.addCell("D1", XlsxCellData("1,4"));
-    sheet.addCell("E1", XlsxCellData("1,5"));
+    XlsxWorkbook book;
+    XlsxWorksheet *sheet = book.addSheet("Sheet1");
+    sheet->addCell("A1", XlsxCellData("1,1"));
+    sheet->addCell("A2", XlsxCellData("2,1"));
+    sheet->addCell("A3", XlsxCellData("3,1"));
+    sheet->addCell("A4", XlsxCellData("4,1"));
+    sheet->addCell("B1", XlsxCellData("1,2"));
+    sheet->addCell("C1", XlsxCellData("1,3"));
+    sheet->addCell("D1", XlsxCellData("1,4"));
+    sheet->addCell("E1", XlsxCellData("1,5"));
 
-    XlsxFormulaEngine engine(&sheet);
+    XlsxFormulaEngine engine(&book);
     QCOMPARE(engine.evaluate("1:1", XlsxCellReference("D4")), XlsxCellData("1,4"));
     QCOMPARE(engine.evaluate("$1:1", XlsxCellReference("D4")), XlsxCellData("1,4"));
     QCOMPARE(engine.evaluate("A:A", XlsxCellReference("D4")), XlsxCellData("4,1"));

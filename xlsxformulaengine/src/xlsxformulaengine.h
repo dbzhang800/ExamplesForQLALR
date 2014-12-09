@@ -19,6 +19,7 @@
 #include <QObject>
 class XlsxCellData;
 class XlsxWorksheet;
+class XlsxWorkbook;
 class XlsxCellReference;
 class XlsxFormulaEnginePrivate;
 
@@ -28,10 +29,10 @@ class XlsxFormulaEngine : public QObject
     Q_DECLARE_PRIVATE(XlsxFormulaEngine)
 
 public:
-    explicit XlsxFormulaEngine(XlsxWorksheet *sheet, QObject *parent = 0);
+    explicit XlsxFormulaEngine(XlsxWorkbook *book, QObject *parent = 0);
     ~XlsxFormulaEngine();
 
-    XlsxCellData evaluate(const QString &formula, const XlsxCellReference &cell);
+    XlsxCellData evaluate(const QString &formula, const XlsxCellReference &cell, XlsxWorksheet *sheet=0);
 
     bool hasError() const;
     QString errorString() const;

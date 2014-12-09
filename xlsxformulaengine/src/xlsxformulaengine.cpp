@@ -18,6 +18,7 @@
 #include "xlsxast_p.h"
 #include "xlsxcelldata.h"
 #include "xlsxworksheet.h"
+#include "xlsxworkbook.h"
 
 #include <QRegularExpression>
 
@@ -32,10 +33,10 @@ XlsxFormulaEnginePrivate::XlsxFormulaEnginePrivate(XlsxFormulaEngine *q)
  * \class XlsxFormulaEngine
  */
 
-XlsxFormulaEngine::XlsxFormulaEngine(XlsxWorksheet *sheet, QObject *parent) :
+XlsxFormulaEngine::XlsxFormulaEngine(XlsxWorkbook *book, QObject *parent) :
     QObject(parent), d_ptr(new XlsxFormulaEnginePrivate(this))
 {
-    d_ptr->sheet = sheet;
+    d_ptr->book = book;
 }
 
 XlsxFormulaEngine::~XlsxFormulaEngine()
@@ -54,10 +55,20 @@ QString XlsxFormulaEngine::errorString() const
     return d->errorString;
 }
 
-XlsxCellData XlsxFormulaEngine::evaluate(const QString &formula, const XlsxCellReference &cell)
+XlsxCellData XlsxFormulaEngine::evaluate(const QString &formula, const XlsxCellReference &cell, XlsxWorksheet *sheet)
 {
     Q_D(XlsxFormulaEngine);
     d->errorString = QString();//null string means no error.
+    if (sheet) {
+        d->sheet = sheet;
+    } else if (d->book) {
+        if (d->book->sheet(cell.sheetName()))
+            d->sheet = d->book->sheet(cell.sheetName());
+        else
+            d->sheet = d->book->currentSheet();
+    } else {
+        d->sheet = 0;
+    }
     d->cellRef = cell;
 
     XlsxFormulaParser parser(formula);
@@ -207,25 +218,27 @@ XlsxCellData XlsxFormulaEnginePrivate::evalAst(XlsxAST::Node *node)
  */
 XlsxCellData XlsxFormulaEnginePrivate::getCellDataAt(const XlsxCellReference &cell)
 {
-    if (cell.type() == XlsxCellReference::SingleCellType)
-        return sheet->cellAt(cell);
+    XlsxCellReference singleCell;
+    if (cell.type() == XlsxCellReference::SingleCellType) {
+        singleCell = cell;
+    } else if (cell.type() == XlsxCellReference::RowsType && cell.rowCount() == 1) {
+        singleCell = XlsxCellReference(cell.row(), this->cellRef.column());
+    } else if (cell.type() == XlsxCellReference::ColumnsType && cell.columnCount() == 1) {
+        singleCell = XlsxCellReference(this->cellRef.row(), cell.column());
 
-    if (cell.type() == XlsxCellReference::RowsType && cell.rowCount() == 1)
-        return sheet->cellAt(XlsxCellReference(cell.row(), this->cellRef.column()));
-
-    if (cell.type() == XlsxCellReference::ColumnsType && cell.columnCount() == 1)
-        return sheet->cellAt(XlsxCellReference(this->cellRef.row(), cell.column()));
-
-    if (cell.type() == XlsxCellReference::CellRangeType) {
+    } else if (cell.type() == XlsxCellReference::CellRangeType) {
         if (cell.columnCount() == 1 && this->cellRef.row() >= cell.firstRow()
                 && this->cellRef.row() <= cell.lastRow()) {
-            return sheet->cellAt(XlsxCellReference(this->cellRef.row(), cell.column()));
+            singleCell = XlsxCellReference(this->cellRef.row(), cell.column());
         }
         if (cell.rowCount() == 1 && this->cellRef.column() >= cell.firstColumn()
                 && this->cellRef.column() <= cell.lastColumn()) {
-            return sheet->cellAt(XlsxCellReference(cell.row(), this->cellRef.column()));
+            singleCell = XlsxCellReference(cell.row(), this->cellRef.column());
         }
     }
+
+    if (!singleCell.isNull() && book)
+        return book->cellAt(singleCell, sheet);
 
     return XlsxCellData("#VALUE!", XlsxCellData::T_Error);
 }
@@ -245,9 +258,12 @@ XlsxCellData XlsxFormulaEnginePrivate::evalIdentifierExpression(XlsxAST::Identif
         return getCellDataAt(cellRef);
 
     //Try to find whether it's a NAME
-    if (sheet->hasDefinedName(text)) {
-        XlsxFormulaEngine engine(sheet);
-        return engine.evaluate(sheet->getDefinedNameFormula(text), XlsxCellReference());
+    if (book) {
+        QString formula = book->getDefinedNameFormula(text);
+        if (!formula.isEmpty()) {
+            XlsxFormulaEngine engine(book);
+            return engine.evaluate(formula, XlsxCellReference());
+        }
     }
 
     //Invalid NAME

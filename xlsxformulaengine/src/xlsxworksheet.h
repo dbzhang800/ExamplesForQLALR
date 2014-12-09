@@ -17,27 +17,23 @@
 #define XLSXWORKSHEET_H
 
 #include <QString>
-#include <QHash>
 #include <QMap>
 
 class XlsxCellData;
 class XlsxCellReference;
+class XlsxWorkbook;
 
 class XlsxWorksheet
 {
 public:
-    XlsxWorksheet();
+    XlsxWorksheet(XlsxWorkbook *book=0);
 
     void addCell(const XlsxCellReference &cellRef, const XlsxCellData &data);
     XlsxCellData cellAt(const XlsxCellReference &cellRef) const;
 
-    void defineName(const QString &name, const QString &formula);
-    bool hasDefinedName(const QString &name) const;
-    QString getDefinedNameFormula(const QString &name) const;
-
 private:
     QMap<int, QMap<int, XlsxCellData> > cellTable;
-    QHash<QString, QString> definedNames;
+    XlsxWorkbook *book;
 };
 
 #endif // XLSXWORKSHEET_H

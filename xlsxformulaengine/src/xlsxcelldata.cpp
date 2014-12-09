@@ -89,11 +89,15 @@ bool XlsxCellData::operator == (const XlsxCellData &other) const
     if (isNull()) {
         if (other.isString())
             return other.stringValue().isEmpty();
+        if (other.isError())
+            return false;
         return !other.doubleValue();
     }
     if (other.isNull()) {
         if (isString())
             return stringValue().isEmpty();
+        if (isError())
+            return false;
         return !doubleValue();
     }
 

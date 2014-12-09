@@ -131,6 +131,7 @@ void FormulaEngineTest::testSimpleCellReference_data()
     QTest::newRow("empty cell 4") << "A3=\"\"" << XlsxCellData(true, XlsxCellData::T_Boolean);
     QTest::newRow("empty cell 5") << "A3=\"0\"" << XlsxCellData(false, XlsxCellData::T_Boolean);
     QTest::newRow("empry cell 6") << "A3&\"Qt\"" << XlsxCellData("Qt");
+    QTest::newRow("empry cell 7") << "A3" << XlsxCellData(0);
 }
 
 void FormulaEngineTest::testSimpleCellReference()
@@ -198,6 +199,7 @@ void FormulaEngineTest::testCrossSheetsCellReference()
     QCOMPARE(engine.evaluate("A1&Sheet1!A1", XlsxCellReference("D4")),  XlsxCellData("Sheet1 1,1"));
     QCOMPARE(engine.evaluate("A1", XlsxCellReference("Sheet1!D4")),  XlsxCellData("Sheet1 1,1"));
     QCOMPARE(engine.evaluate("\'#Sheet+-!!!!\'!C1", XlsxCellReference("D4")),  XlsxCellData("Valid Sheet Name"));
+    QCOMPARE(engine.evaluate("\'#Sheet+-!!!!\'!EE11", XlsxCellReference("D4")),  XlsxCellData(0));
 }
 
 QTEST_APPLESS_MAIN(FormulaEngineTest)

@@ -79,11 +79,18 @@ XlsxCellData XlsxFormulaEngine::evaluate(const QString &formula, const XlsxCellR
 
     XlsxCellData data = d->evalAst(parser.sym(1).Node);
 
+    //Return 0 for formula when empty cell is used.
+    if (data.isNull() && !d->errorString.isEmpty())
+        return XlsxCellData(0);
+
     return data;
 }
 
 XlsxCellData XlsxFormulaEnginePrivate::evalAst(XlsxAST::Node *node)
 {
+    if (!errorString.isEmpty())
+        return XlsxCellData();
+
     switch (node->kind) {
 //    case XlsxAST::Node::Kind_Node:
 //    case XlsxAST::Node::Kind_ExpressionNode:

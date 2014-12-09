@@ -26,6 +26,7 @@
 %token T_IDENTIFIER "identifier"
 %token T_CELL_A1_REF "$A$1"
 %token T_CELL_R1C1_REF "R[1]C[1]"
+%token T_SHEET_NAME
 %token T_LPAREN "("
 %token T_RPAREN ")"
 %token T_LBRACKET "["
@@ -260,38 +261,27 @@ PrimaryExpression: T_NUMRIC_LITERAL ;
         break;
 ./
 
-IdExpression: T_IDENTIFIER;
+PrimaryExpression: NameOrCellReference;
+NameOrCellReference: T_IDENTIFIER;
 /.
     case $rule_number:
         sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
         break;
 ./
+NameOrCellReference: T_CELL_A1_REF;
+/.
+    case $rule_number:
+        qDebug()<<*sym(1).sval;
+        sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
+        break;
+./
 
-CellReferenceSingle: IdExpression;
-CellReferenceSingle: T_CELL_A1_REF;
+NameOrCellReference: T_CELL_R1C1_REF;
 /.
     case $rule_number:
         sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
         break;
 ./
-
-CellReferenceSingle: T_CELL_R1C1_REF;
-/.
-    case $rule_number:
-        sym(1).Node = makeAstNode<XlsxAST::IdentifierExpression> (pool, sym(1).sval);
-        break;
-./
-
-CellReferenceRange: CellReferenceSingle;
-CellReferenceRange: CellReferenceSingle T_COLON CellReferenceSingle;
-/.
-    case $rule_number:
-        sym(1).Node = makeAstNode<XlsxAST::CellReferenceExpression> (pool, sym(1).Identifier, sym(3).Identifier);
-        break;
-./
-
-PrimaryExpression: CellReferenceExpression;
-CellReferenceExpression: CellReferenceRange;
 
 PrimaryExpression: T_ERROR_CONSTANT;
 /.

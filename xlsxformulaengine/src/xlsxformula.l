@@ -32,6 +32,7 @@ D			[0-9]
 L			[a-zA-Z_]
 H			[a-fA-F0-9]
 E			[Ee][+-]?{D}+
+SHEET_NAME_CHAR   [^:;%&=<>\[\]\'\?\^\+\-\*\/]
 
 %x str
 
@@ -65,20 +66,25 @@ char *string_buf_ptr;
                        *string_buf_ptr++ = *yptr++;
                }
 
+"#DIV/0!"|"#N/A"|"#NAME?"|"#NULL!"|"#NUM!"|"#REF!"|"#VALUE!"|"#GETTING_DATA" {
+                    SAVESTRING(yytext);
+                    return T_ERROR_CONSTANT;
+               }
+
 [a-zA-Z_]([a-zA-Z0-9_])*  {SAVESTRING(yytext); return T_IDENTIFIER; }
+
 \$?[a-zA-Z]+\$?[0-9]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
 \$?[0-9]+":"\$?[0-9]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
 \$?[a-zA-Z]+":"\$?[a-zA-Z]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
+\$?[a-zA-Z]+\$?[0-9]+":"\$?[a-zA-Z]+\$?[0-9]+ {SAVESTRING(yytext); return T_CELL_A1_REF;}
+
 R"["[0-9]+"]"  {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
 C"["[0-9]+"]"  {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
 R"["[0-9]+"]"C"["[0-9]+"]" {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
 R([0-9]+)?C"["[0-9]+"]" {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
 R"["[0-9]+"]"C([0-9]+)? {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
 
-"#DIV/0!"|"#N/A"|"#NAME?"|"#NULL!"|"#NUM!"|"#REF!"|"#VALUE!"|"#GETTING_DATA" {
-                              SAVESTRING(yytext);
-                              return T_ERROR_CONSTANT;
-                          }
+{SHEET_NAME_CHAR}+(":"{SHEET_NAME_CHAR}+)?"!" {SAVESTRING(yytext); return T_SHEET_NAME; }
 
 {D}+{E}?            { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }
 {D}*"."{D}+({E})?   { sym(1).dval = atof(yytext); return T_NUMRIC_LITERAL; }
@@ -109,7 +115,5 @@ R"["[0-9]+"]"C([0-9]+)? {SAVESTRING(yytext); return T_CELL_R1C1_REF;}
 [ ]*"<>"[ ]*        { return T_NOT_EQ; }
 [ ]*"<="[ ]*        { return T_LE; }
 [ ]*">="[ ]*        { return T_GE; }
-
-[\t\v\f\n]                   { /* eat me */ }
 
 %%

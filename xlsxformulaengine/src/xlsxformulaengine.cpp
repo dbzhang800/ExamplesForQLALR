@@ -93,9 +93,6 @@ XlsxCellData XlsxFormulaEnginePrivate::evalAst(XlsxAST::Node *node)
     case XlsxAST::Node::Kind_IdentifierExpression: {
         return evalIdentifierExpression(static_cast<XlsxAST::IdentifierExpression *>(node));
     }
-    case XlsxAST::Node::Kind_CellReferenceExpression: {
-        return evalCellReferenceExpression(static_cast<XlsxAST::CellReferenceExpression *>(node));
-    }
     case XlsxAST::Node::Kind_UnaryPlusExpression: {
         return evalAst(static_cast<XlsxAST::UnaryPlusExpression *>(node)->expression);
     }
@@ -236,6 +233,7 @@ XlsxCellData XlsxFormulaEnginePrivate::getCellDataAt(const XlsxCellReference &ce
 XlsxCellData XlsxFormulaEnginePrivate::evalIdentifierExpression(XlsxAST::IdentifierExpression *idExp)
 {
     QString text = idExp->name->toUpper();
+
     if (text == "TRUE")
         return XlsxCellData(true, XlsxCellData::T_Boolean);
     if (text == "FALSE")
@@ -254,10 +252,4 @@ XlsxCellData XlsxFormulaEnginePrivate::evalIdentifierExpression(XlsxAST::Identif
 
     //Invalid NAME
     return XlsxCellData("#NAME?", XlsxCellData::T_Error);
-}
-
-XlsxCellData XlsxFormulaEnginePrivate::evalCellReferenceExpression(XlsxAST::CellReferenceExpression *cellExp)
-{
-    return getCellDataAt(XlsxCellReference(QString("%1:%2").arg(cellExp->cell1->name->toUpper())
-                                           .arg(cellExp->cell2->name->toUpper())));
 }

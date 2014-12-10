@@ -18,9 +18,10 @@
 %impl xlsxformulaparser.cpp
 
 %token T_STRING_LITERAL "string literal"
-
 %token T_ERROR_CONSTANT "#DIV/0! etc."
 %token T_NUMRIC_LITERAL "numric literal"
+%token T_LOGICAL_CONSTANT "TRUE FALSE"
+
 %token T_NAME_OR_CELL_REF "name or cellreference"
 %token T_LPAREN "("
 %token T_RPAREN ")"
@@ -271,6 +272,13 @@ PrimaryExpression: T_ERROR_CONSTANT;
         break;
 ./
 
+PrimaryExpression: T_LOGICAL_CONSTANT;
+/.
+    case $rule_number:
+        sym(1).Node = makeAstNode<XlsxAST::LogicalConstantLiteral> (pool, sym(1).sval);
+        break;
+./
+
 PrimaryExpression: T_LPAREN Expression T_RPAREN;
 /.
     case $rule_number:
@@ -280,6 +288,13 @@ PrimaryExpression: T_LPAREN Expression T_RPAREN;
 
 PrimaryExpression: CallExpression;
 CallExpression: T_NAME_OR_CELL_REF Arguments;
+/.
+    case $rule_number:
+        sym(1).Node = makeAstNode<XlsxAST::CallExpression> (pool, sym(1).sval, sym(2).ArgumentList);
+        break;
+./
+
+CallExpression: T_LOGICAL_CONSTANT Arguments;
 /.
     case $rule_number:
         sym(1).Node = makeAstNode<XlsxAST::CallExpression> (pool, sym(1).sval, sym(2).ArgumentList);

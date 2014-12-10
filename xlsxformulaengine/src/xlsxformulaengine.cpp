@@ -108,6 +108,10 @@ XlsxCellData XlsxFormulaEnginePrivate::evalAst(XlsxAST::Node *node)
         QString text = *(static_cast<XlsxAST::ErrorConstantLiteral *>(node)->value);
         return XlsxCellData(text, XlsxCellData::T_Error);
     }
+    case XlsxAST::Node::Kind_LogicalConstantLiteral: {
+        QString text = *(static_cast<XlsxAST::LogicalConstantLiteral *>(node)->value);
+        return XlsxCellData(text.toUpper()==QStringLiteral("TRUE"), XlsxCellData::T_Boolean);
+    }
     case XlsxAST::Node::Kind_IdentifierExpression: {
         return evalIdentifierExpression(static_cast<XlsxAST::IdentifierExpression *>(node));
     }
@@ -253,11 +257,6 @@ XlsxCellData XlsxFormulaEnginePrivate::getCellDataAt(const XlsxCellReference &ce
 XlsxCellData XlsxFormulaEnginePrivate::evalIdentifierExpression(XlsxAST::IdentifierExpression *idExp)
 {
     QString text = idExp->name->toUpper();
-
-    if (text == "TRUE")
-        return XlsxCellData(true, XlsxCellData::T_Boolean);
-    if (text == "FALSE")
-        return XlsxCellData(false, XlsxCellData::T_Boolean);
 
     //Try to find whether it's a cellReference
     XlsxCellReference cellRef(text);

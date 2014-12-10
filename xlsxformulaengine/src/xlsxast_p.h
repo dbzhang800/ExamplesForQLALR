@@ -63,6 +63,7 @@ public:
         Kind_NumericLiteral,
         Kind_StringLiteral,
         Kind_ErrorConstantLiteral,
+        Kind_LogicalConstantLiteral,
         Kind_IdentifierExpression,
         Kind_UnaryMinusExpression,
         Kind_UnaryPlusExpression,
@@ -132,6 +133,16 @@ class ErrorConstantLiteral: public ExpressionNode
 public:
     ErrorConstantLiteral(const QString *v):
         value (v) { kind = Kind_ErrorConstantLiteral; }
+
+// attributes:
+    const QString *value;
+};
+
+class LogicalConstantLiteral: public ExpressionNode
+{
+public:
+    LogicalConstantLiteral(const QString *v):
+        value (v) { kind = Kind_LogicalConstantLiteral; }
 
 // attributes:
     const QString *value;

@@ -86,6 +86,7 @@ char *string_buf_ptr;
                     return T_ERROR_CONSTANT;
                }
 
+"TRUE"|"FALSE" { SAVESTRING(yytext); return T_LOGICAL_CONSTANT;}
 [a-zA-Z_]([a-zA-Z0-9_])*  {SAVESTRING(yytext); return T_NAME_OR_CELL_REF; }
 
 ({SHEET_NAME}"!")?{A1_CELL_REF}(":"{A1_CELL_REF})? {

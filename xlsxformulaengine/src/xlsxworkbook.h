@@ -39,7 +39,6 @@ public:
 
     void defineName(const QString &name, const QString &formula, const QString &scope=QString());
     QString getDefinedNameFormula(const QString &name, const QString &scope=QString()) const;
-    QString getDefinedNameFormula(const QString &name, XlsxWorksheet *scope) const;
 
 private:
     struct DefineNameData

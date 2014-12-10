@@ -82,6 +82,7 @@ void FormulaEngineTest::testOperator_data()
 
     //Error.
     QTest::newRow("100/0") << "100/0" << XlsxCellData("#DIV/0!", XlsxCellData::T_Error);
+    QTest::newRow("\"abc\"/0") << "\"abc\"/0" << XlsxCellData("#VALUE!", XlsxCellData::T_Error);
 
     //Convert string to number if convertable.
     QTest::newRow("str2Num") << "\"1\"+\"33\"*2" << XlsxCellData(67);

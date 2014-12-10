@@ -34,10 +34,14 @@ L			[a-zA-Z_]
 H			[a-fA-F0-9]
 E			[Ee][+-]?{D}+
 
+BOOK_NAME_CHAR [^:;%&=<>\[\]\'\?\^\+\-\*\/]
 SHEET_NAME_CHAR   [^:;%&=<>\[\]\'\?\^\+\-\*\/\\]
-SHEET_NAME_NORMAL  {SHEET_NAME_CHAR}+(":"{SHEET_NAME_CHAR}+)?
-SHEET_NAME_CHAR_S [^:\[\]\'\?\*\/\\]
-SHEET_NAME_SPECIAL "'"{SHEET_NAME_CHAR_S}+(":"{SHEET_NAME_CHAR_S}+)?"'"
+SHEET_NAME_NORMAL  ("["{BOOK_NAME_CHAR}+"]")?{SHEET_NAME_CHAR}+(":"{SHEET_NAME_CHAR}+)?
+
+BOOK_NAME_CHAR_SPECIAL [^:\[\]\'\?\*]
+SHEET_NAME_CHAR_SPECIAL [^:\[\]\'\?\*\/\\]
+SHEET_NAME_SPECIAL "'"("["{BOOK_NAME_CHAR_SPECIAL}+"]")?{SHEET_NAME_CHAR_SPECIAL}+(":"{SHEET_NAME_CHAR_SPECIAL}+)?"'"
+
 SHEET_NAME  {SHEET_NAME_NORMAL}|{SHEET_NAME_SPECIAL}
 
 A1_CELL_REF \$?{C}+\$?{D}+|\$?{D}+":"\$?{D}+|\$?{C}+":"\$?{C}+
@@ -90,6 +94,11 @@ char *string_buf_ptr;
                 }
 
 ({SHEET_NAME}"!")?{R1C1_CELL_REF}(":"{R1C1_CELL_REF})? {
+                    SAVESTRING(yytext);
+                    return T_NAME_OR_CELL_REF;
+                }
+
+({BOOK_NAME_CHAR}+"!")[a-zA-Z\_\\][a-zA-Z0-9\_\.]+  {
                     SAVESTRING(yytext);
                     return T_NAME_OR_CELL_REF;
                 }

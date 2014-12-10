@@ -202,6 +202,10 @@ void FormulaEngineTest::testCrossSheetsCellReference()
     QCOMPARE(engine.evaluate("\'#Sheet+-!!!!\'!EE11", XlsxCellReference("D4")),  XlsxCellData(0));
 
     QCOMPARE(engine.evaluate("NonExistingSheet!EE11", XlsxCellReference("D4")),  XlsxCellData("#REF!", XlsxCellData::T_Error));
+    QCOMPARE(engine.evaluate("[1]Sheet1!EE11", XlsxCellReference("D4")),  XlsxCellData("#REF!", XlsxCellData::T_Error));
+    QCOMPARE(engine.evaluate("\'[111]#Sheet+-!!!!\'!EE11", XlsxCellReference("D4")),  XlsxCellData("#REF!", XlsxCellData::T_Error));
+
+    QCOMPARE(engine.evaluate("WorkBook.xlsx!ONE_NAME", XlsxCellReference("D4")),  XlsxCellData("#NAME?", XlsxCellData::T_Error));
 }
 
 QTEST_APPLESS_MAIN(FormulaEngineTest)

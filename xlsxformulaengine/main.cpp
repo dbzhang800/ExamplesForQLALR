@@ -20,6 +20,15 @@
 #include "xlsxcellreference.h"
 #include <QtTest>
 
+namespace QTest {
+    template<>
+    char *toString(const XlsxCellData &data)
+    {
+        QByteArray ba = QStringLiteral("XlsxCellData(%1)").arg(data.stringValue()).toUtf8();
+        return qstrdup(ba.data());
+    }
+}
+
 class FormulaEngineTest : public QObject
 {
     Q_OBJECT

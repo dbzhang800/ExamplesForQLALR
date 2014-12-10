@@ -49,14 +49,26 @@ public:
     bool booleanValue() const;
     QString stringValue() const;
 
+    operator QVariant() const;
+
     bool operator == (const XlsxCellData &other) const;
     bool operator != (const XlsxCellData &other) const;
     bool operator < (const XlsxCellData &other) const;
 
+    friend QDataStream &operator>>(QDataStream &, XlsxCellData &);
 private:
     Type type;
     QVariant val;
 };
+
+#if !defined(QT_NO_DATASTREAM)
+QDataStream &operator<<(QDataStream &, const XlsxCellData &);
+QDataStream &operator>>(QDataStream &, XlsxCellData &);
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const XlsxCellData &c);
+#endif
 
 Q_DECLARE_METATYPE(XlsxCellData)
 #endif // XLSXCELLDATA_H

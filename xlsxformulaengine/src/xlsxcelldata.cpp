@@ -14,6 +14,8 @@
 ****************************************************************************/
 
 #include "xlsxcelldata.h"
+#include <QDebug>
+#include <QDataStream>
 
 XlsxCellData::XlsxCellData()
     :type(T_Numeric)
@@ -83,6 +85,11 @@ QString XlsxCellData::stringValue() const
     return val.toString();
 }
 
+XlsxCellData::operator QVariant() const
+{
+    return QVariant(qMetaTypeId<XlsxCellData>(), this);
+}
+
 bool XlsxCellData::operator == (const XlsxCellData &other) const
 {
     //Deal with null data
@@ -134,3 +141,37 @@ bool XlsxCellData::operator < (const XlsxCellData &other) const
 
     return type < other.type;
 }
+
+
+#if !defined(QT_NO_DATASTREAM)
+QDataStream &operator<<(QDataStream &s, const XlsxCellData &data)
+{
+    s << int(data.cellType()) << data.cellValue();
+
+    return s;
+}
+
+QDataStream &operator>>(QDataStream &s, XlsxCellData &data)
+{
+    int t;
+    QVariant v;
+    s >> t >> v;
+    data.type = XlsxCellData::Type(t);
+    data.val = v;
+    return s;
+}
+
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const XlsxCellData &data)
+{
+    if (data.isNull())
+        dbg.nospace() << "XlsxCellData(null)";
+    else
+        dbg.nospace() << "XlsxCellData("<<data.stringValue()<<")";
+
+    return dbg.space();
+}
+
+#endif

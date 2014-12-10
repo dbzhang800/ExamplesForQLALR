@@ -69,7 +69,7 @@ XlsxCellData XlsxWorkbook::cellAt(const XlsxCellReference &cellRef, XlsxWorkshee
     XlsxWorksheet *st = cellRef.sheetName().isEmpty() ? defaultSheet : sheet(cellRef.sheetName());
     if (st)
         return st->cellAt(cellRef);
-    return XlsxCellData("#NAME!", XlsxCellData::T_Error);
+    return XlsxCellData("#REF!", XlsxCellData::T_Error);
 }
 
 void XlsxWorkbook::defineName(const QString &name, const QString &formula, const QString &scope)
